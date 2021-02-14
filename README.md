@@ -26,7 +26,7 @@ the icosahedron.  Here's a 3D representation of the grid showing the Earth
 discretized into hexagonal and pentagonal cells.  The highlighted blue cells
 are immediate neighbors to the highlighted red cell:
 
-ILLUSTRATION
+![Picture of Earth discretized into the icosahedral grid](illustrations/icosahedral_earth.png)
 
 A common algorithm performed on this type of grid would be to iteratively apply
 a stencil computation that updates each cell with a weighted average of its
@@ -34,7 +34,7 @@ neighbors.
 
 If we flatten the grid into arrays its connectivity pattern looks like this:
 
-ILLUSTRATION
+![Flattened picture of icosahedral grid with connectivity edges showing connectivity](illustrations/flattened_icosahedron.png)
 
 Each circular point represents a piece of data; the two large circles in the
 top-left and bottom-right corners represent data nodes for the north and south
@@ -63,7 +63,7 @@ boundaries and has a folding pattern pattern along the north boundary.
 
 See the following illustration the connectivity pattern for this grid:
 
-ILLUSTRATION
+![Tripole grid](illustrations/tripole.png)
 
 ``` Fortran
 module Stencils; contains
