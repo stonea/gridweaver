@@ -1,0 +1,71 @@
+
+Neighbor east {
+    x = 1
+    y = 0
+}
+
+Neighbor north {
+    x = 0
+    y = 1
+}
+
+Neighbor north_east {
+    x = 1
+    y = 1
+}
+
+Neighbor north_west {
+    x = -1
+    y = 1
+}
+
+Neighbor south {
+    x = 0
+    y = -1
+}
+
+Neighbor south_east {
+    x = 1
+    y = -1
+}
+
+Neighbor south_west {
+    x = -1
+    y = -1
+}
+
+Neighbor west {
+    x = -1
+    y = 0
+}
+
+Subgrid sg_wrapLR {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_wrapTB {
+    w = 10
+    h = 10
+}
+
+Grid gr_wrapLR {
+    subgrids = [sg_wrapLR]
+    srcRegions = [(0,1 - 0,10  BL), (11,1 - 11,10  BL)]
+    srcSubgrids = [sg_wrapLR, sg_wrapLR]
+    tgtRegions = [(10,1 - 10,10  BL), (1,1 - 1,10  BL)]
+    tgtSubgrids = [sg_wrapLR, sg_wrapLR]
+    rotations = [4, 4]
+}
+
+Grid gr_wrapTB {
+    subgrids = [sg_wrapTB]
+    srcRegions = [(1,11 - 10,11  BL), (1,0 - 10,0  BL)]
+    srcSubgrids = [sg_wrapTB, sg_wrapTB]
+    tgtRegions = [(1,1 - 10,1  BL), (1,10 - 10,10  BL)]
+    tgtSubgrids = [sg_wrapTB, sg_wrapTB]
+    rotations = [4, 4]
+}
+
+Environment contains no distributions.
+Environment contains no schedules.

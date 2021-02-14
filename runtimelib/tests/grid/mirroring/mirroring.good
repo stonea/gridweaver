@@ -1,0 +1,99 @@
+
+Neighbor east {
+    x = 1
+    y = 0
+}
+
+Neighbor north {
+    x = 0
+    y = 1
+}
+
+Neighbor north_east {
+    x = 1
+    y = 1
+}
+
+Neighbor north_west {
+    x = -1
+    y = 1
+}
+
+Neighbor south {
+    x = 0
+    y = -1
+}
+
+Neighbor south_east {
+    x = 1
+    y = -1
+}
+
+Neighbor south_west {
+    x = -1
+    y = -1
+}
+
+Neighbor west {
+    x = -1
+    y = 0
+}
+
+Subgrid sg_mirrorB {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_mirrorL {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_mirrorR {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_mirrorT {
+    w = 10
+    h = 10
+}
+
+Grid gr_mirrorB {
+    subgrids = [sg_mirrorB]
+    srcRegions = [(1,0 - 10,0  BL)]
+    srcSubgrids = [sg_mirrorB]
+    tgtRegions = [(1,1 - 10,1  BL)]
+    tgtSubgrids = [sg_mirrorB]
+    rotations = [4]
+}
+
+Grid gr_mirrorL {
+    subgrids = [sg_mirrorL]
+    srcRegions = [(0,1 - 0,10  BL)]
+    srcSubgrids = [sg_mirrorL]
+    tgtRegions = [(1,1 - 1,10  BL)]
+    tgtSubgrids = [sg_mirrorL]
+    rotations = [4]
+}
+
+Grid gr_mirrorR {
+    subgrids = [sg_mirrorR]
+    srcRegions = [(11,1 - 11,10  BL)]
+    srcSubgrids = [sg_mirrorR]
+    tgtRegions = [(10,1 - 10,10  BL)]
+    tgtSubgrids = [sg_mirrorR]
+    rotations = [4]
+}
+
+Grid gr_mirrorT {
+    subgrids = [sg_mirrorT]
+    srcRegions = [(1,11 - 10,11  BL)]
+    srcSubgrids = [sg_mirrorT]
+    tgtRegions = [(1,10 - 10,10  BL)]
+    tgtSubgrids = [sg_mirrorT]
+    rotations = [4]
+}
+
+Environment contains no distributions.
+Environment contains no schedules.

@@ -1,0 +1,18 @@
+
+Environment contains no neighbors.
+Subgrid subgrid {
+    w = 10
+    h = 10
+}
+
+Grid grid {
+    subgrids = [subgrid]
+    srcRegions = [(0,0 - 0,10  BL)]
+    srcSubgrids = [subgrid]
+    tgtRegions = [(10,1 - 10,10  BL)]
+    tgtSubgrids = [subgrid]
+    rotations = [0]
+}
+
+Environment contains no distributions.
+Environment contains no schedules.

@@ -1,0 +1,119 @@
+
+Neighbor east {
+    x = 1
+    y = 0
+}
+
+Neighbor north {
+    x = 0
+    y = 1
+}
+
+Neighbor north_east {
+    x = 1
+    y = 1
+}
+
+Neighbor north_west {
+    x = -1
+    y = 1
+}
+
+Neighbor south {
+    x = 0
+    y = -1
+}
+
+Neighbor south_east {
+    x = 1
+    y = -1
+}
+
+Neighbor south_west {
+    x = -1
+    y = -1
+}
+
+Neighbor west {
+    x = -1
+    y = 0
+}
+
+Subgrid sg_connectBtoT_sg1 {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectBtoT_sg2 {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectLtoR_sg1 {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectLtoR_sg2 {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectRtoL_sg1 {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectRtoL_sg2 {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectTtoB_sg1 {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectTtoB_sg2 {
+    w = 10
+    h = 10
+}
+
+Grid gr_connectBtoT {
+    subgrids = [sg_connectBtoT_sg1, sg_connectBtoT_sg2]
+    srcRegions = [(1,0 - 10,0  BL), (1,11 - 10,11  BL)]
+    srcSubgrids = [sg_connectBtoT_sg1, sg_connectBtoT_sg2]
+    tgtRegions = [(1,10 - 10,10  BL), (1,1 - 10,1  BL)]
+    tgtSubgrids = [sg_connectBtoT_sg2, sg_connectBtoT_sg1]
+    rotations = [0, 0]
+}
+
+Grid gr_connectLtoR {
+    subgrids = [sg_connectLtoR_sg1, sg_connectLtoR_sg2]
+    srcRegions = [(11,1 - 11,10  BL), (0,1 - 0,10  BL)]
+    srcSubgrids = [sg_connectLtoR_sg1, sg_connectLtoR_sg2]
+    tgtRegions = [(1,1 - 1,10  BL), (10,1 - 10,10  BL)]
+    tgtSubgrids = [sg_connectLtoR_sg2, sg_connectLtoR_sg1]
+    rotations = [0, 0]
+}
+
+Grid gr_connectRtoL {
+    subgrids = [sg_connectRtoL_sg1, sg_connectRtoL_sg2]
+    srcRegions = [(11,1 - 11,10  BL), (0,1 - 0,10  BL)]
+    srcSubgrids = [sg_connectRtoL_sg1, sg_connectRtoL_sg2]
+    tgtRegions = [(1,1 - 1,10  BL), (10,1 - 10,10  BL)]
+    tgtSubgrids = [sg_connectRtoL_sg2, sg_connectRtoL_sg1]
+    rotations = [0, 0]
+}
+
+Grid gr_connectTtoB {
+    subgrids = [sg_connectTtoB_sg1, sg_connectTtoB_sg2]
+    srcRegions = [(1,0 - 10,0  BL), (1,11 - 10,11  BL)]
+    srcSubgrids = [sg_connectTtoB_sg2, sg_connectTtoB_sg1]
+    tgtRegions = [(1,10 - 10,10  BL), (1,1 - 10,1  BL)]
+    tgtSubgrids = [sg_connectTtoB_sg1, sg_connectTtoB_sg2]
+    rotations = [0, 0]
+}
+
+Environment contains no distributions.
+Environment contains no schedules.

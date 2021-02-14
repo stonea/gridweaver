@@ -1,0 +1,7 @@
+TEST_DRIVER=test
+TEST_DRIVER_OBJS=test.o
+
+LIB_NAME=libgridlib.so
+LIB_OBJS=string.o utils.o gridweaver.o schedule.o data.o 
+
+STATICLIB_NAME=libgridlib.a

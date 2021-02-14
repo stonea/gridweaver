@@ -1,0 +1,3 @@
+rm -f fill_block fill_block.o
+mpif90 -g -I/usr/include/openmpi-x86_64 -I/s/chopin/l/grad/stonea/projects/gridweaver/runtimelib -c fill_block.F90
+mpif90 -o fill_block fill_block.o -L/s/chopin/l/grad/stonea/projects/gridweaver/runtimelib -L/s/chopin/l/grad/stonea/local/lib -lgridlib -rdynamic -lstdc++ -lmpi_cxx

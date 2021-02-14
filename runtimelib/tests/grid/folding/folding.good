@@ -1,0 +1,155 @@
+
+Neighbor east {
+    x = 1
+    y = 0
+}
+
+Neighbor north {
+    x = 0
+    y = 1
+}
+
+Neighbor north_east {
+    x = 1
+    y = 1
+}
+
+Neighbor north_west {
+    x = -1
+    y = 1
+}
+
+Neighbor south {
+    x = 0
+    y = -1
+}
+
+Neighbor south_east {
+    x = 1
+    y = -1
+}
+
+Neighbor south_west {
+    x = -1
+    y = -1
+}
+
+Neighbor west {
+    x = -1
+    y = 0
+}
+
+Subgrid sg_foldB_even {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_foldB_odd {
+    w = 9
+    h = 9
+}
+
+Subgrid sg_foldL_even {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_foldL_odd {
+    w = 9
+    h = 9
+}
+
+Subgrid sg_foldR_even {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_foldR_odd {
+    w = 9
+    h = 9
+}
+
+Subgrid sg_foldT_even {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_foldT_odd {
+    w = 9
+    h = 9
+}
+
+Grid gr_foldB_even {
+    subgrids = [sg_foldB_even]
+    srcRegions = [(1,0 - 5,0  BL), (6,0 - 10,0  BL)]
+    srcSubgrids = [sg_foldB_even, sg_foldB_even]
+    tgtRegions = [(6,1 - 10,1  BR), (1,1 - 5,1  BR)]
+    tgtSubgrids = [sg_foldB_even, sg_foldB_even]
+    rotations = [4, 4]
+}
+
+Grid gr_foldB_odd {
+    subgrids = [sg_foldB_odd]
+    srcRegions = [(1,0 - 4,0  BL), (5,0 - 9,0  BL)]
+    srcSubgrids = [sg_foldB_odd, sg_foldB_odd]
+    tgtRegions = [(5,1 - 9,1  BR), (1,1 - 4,1  BR)]
+    tgtSubgrids = [sg_foldB_odd, sg_foldB_odd]
+    rotations = [4, 4]
+}
+
+Grid gr_foldL_even {
+    subgrids = [sg_foldL_even]
+    srcRegions = [(0,1 - 0,5  BL), (0,6 - 0,10  BL)]
+    srcSubgrids = [sg_foldL_even, sg_foldL_even]
+    tgtRegions = [(1,6 - 1,10  TL), (1,1 - 1,5  TL)]
+    tgtSubgrids = [sg_foldL_even, sg_foldL_even]
+    rotations = [4, 4]
+}
+
+Grid gr_foldL_odd {
+    subgrids = [sg_foldL_odd]
+    srcRegions = [(0,1 - 0,4  BL), (0,5 - 0,9  BL)]
+    srcSubgrids = [sg_foldL_odd, sg_foldL_odd]
+    tgtRegions = [(1,5 - 1,9  TL), (1,1 - 1,4  TL)]
+    tgtSubgrids = [sg_foldL_odd, sg_foldL_odd]
+    rotations = [4, 4]
+}
+
+Grid gr_foldR_even {
+    subgrids = [sg_foldR_even]
+    srcRegions = [(11,1 - 11,5  BL), (11,6 - 11,10  BL)]
+    srcSubgrids = [sg_foldR_even, sg_foldR_even]
+    tgtRegions = [(10,6 - 10,10  TL), (10,1 - 10,5  TL)]
+    tgtSubgrids = [sg_foldR_even, sg_foldR_even]
+    rotations = [4, 4]
+}
+
+Grid gr_foldR_odd {
+    subgrids = [sg_foldR_odd]
+    srcRegions = [(10,1 - 10,4  BL), (10,5 - 10,9  BL)]
+    srcSubgrids = [sg_foldR_odd, sg_foldR_odd]
+    tgtRegions = [(9,5 - 9,9  TL), (9,1 - 9,4  TL)]
+    tgtSubgrids = [sg_foldR_odd, sg_foldR_odd]
+    rotations = [4, 4]
+}
+
+Grid gr_foldT_even {
+    subgrids = [sg_foldT_even]
+    srcRegions = [(1,11 - 5,11  BL), (6,11 - 10,11  BL)]
+    srcSubgrids = [sg_foldT_even, sg_foldT_even]
+    tgtRegions = [(6,10 - 10,10  BR), (1,10 - 5,10  BR)]
+    tgtSubgrids = [sg_foldT_even, sg_foldT_even]
+    rotations = [4, 4]
+}
+
+Grid gr_foldT_odd {
+    subgrids = [sg_foldT_odd]
+    srcRegions = [(1,10 - 4,10  BL), (5,10 - 9,10  BL)]
+    srcSubgrids = [sg_foldT_odd, sg_foldT_odd]
+    tgtRegions = [(5,9 - 9,9  BR), (1,9 - 4,9  BR)]
+    tgtSubgrids = [sg_foldT_odd, sg_foldT_odd]
+    rotations = [4, 4]
+}
+
+Environment contains no distributions.
+Environment contains no schedules.

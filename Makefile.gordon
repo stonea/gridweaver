@@ -1,0 +1,19 @@
+include Makefile.common
+
+CXX=mpiCC
+
+LIB__CXXFLAGS=-g -I/s/chopin/l/grad/stonea/local/include -fPIC
+LIB__LDFLAGS=-g -L/s/chopin/l/grad/stonea/local/lib -rdynamic -shared
+
+#----------------------------------------------------------------------
+
+all: $(LIB__NAME)
+
+$(LIB__NAME): $(LIB__OBJS)
+	ar r $(LIB__NAME) $(LIB__OBJS)
+
+$(LIB__OBJS) : %.o : %.cpp
+	$(CXX) $(LIB__CXXFLAGS) -c $<
+
+clean:
+	-rm $(LIB__NAME) $(LIB__OBJS)

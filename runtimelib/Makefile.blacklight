@@ -1,0 +1,36 @@
+include Makefile.common
+
+TEST_DRIVER_FTN=ifort
+TEST_DRIVER_LDFLAGS=-lmpi -lstdc++ 
+#-L. -lgridlib -lstdc++ -lmpi_cxx
+TEST_DRIVER_FTNFLAGS=-fPIC -g -I/usr/include/openmpi-x86_64 -fPIC 
+
+LIB_FTN=ifort
+LIB_STATICLD=../libgridweaver.a
+LIB_LDFLAGS=-L.. -L/s/chopin/l/grad/stonea/local/lib -dynamic 
+LIB_FTNFLAGS=-fPIC -g -I/usr/include/openmpi-x86_64 -fPIC
+
+# ------------------------------------------------------------------------------
+# For some reason on the Cray I'm unable to build the Fortran lib as a dynamic
+# lib and link to it so instead I build it as a static library and build to
+# the static verison of both the C++ and fortran lib.
+# ------------------------------------------------------------------------------
+
+all: $(LIB_NAME) $(TEST_DRIVER)
+
+
+$(LIB_NAME): $(LIB_OBJS)
+	$(LIB_FTN) $(LIB_LDFLAGS) -shared -o $(LIB_NAME) $(LIB_OBJS) $(LIB_STATICLD)
+	ar r $(STATICLIB_NAME) $(LIB_OBJS) $(LIB_STATICLD)
+
+$(TEST_DRIVER): $(STATICLIB_NAME) $(TEST_DRIVER_OBJS)
+	$(TEST_DRIVER_FTN) $(TEST_DRIVER_LDFLAGS) -o $(TEST_DRIVER) $(TEST_DRIVER_OBJS) $(STATICLIB_NAME) $(LIB_STATICLD)
+
+$(LIB_OBJS): %.o: %.F90
+	$(LIB_FTN) $(LIB_FTNFLAGS) -c $<
+
+$(TEST_DRIVER_OBJS): %.o: %.F90
+	$(TEST_DRIVER_FTN) $(TEST_DRIVER_FTNFLAGS) -c $<
+
+clean:
+	-rm $(LIB_NAME) $(LIB_OBJS) *.mod

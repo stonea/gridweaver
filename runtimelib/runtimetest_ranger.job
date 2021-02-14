@@ -1,0 +1,13 @@
+#!/bin/bash
+#$ -V                      # Inherit the submission environment
+#$ -cwd                    # Start job in submission directory
+#$ -N myMPI                # Job Name
+#$ -j y                    # Combine stderr and stdout
+#$ -o $JOB_NAME.o$JOB_ID   # Name of the output file (eg. myMPI.oJobID)
+#$ -pe 16way 32            # Requests 16 tasks/node, 32 cores total
+#$ -q normal               # Queue name "normal"
+#$ -l h_rt=00:15:00        # Run time
+set -x                     # Echo commands, use "set echo" with csh
+cp $HOME/gridweaver/runtimelib/test $WORK
+cd $WORK
+ibrun ./test           # Run the MPI executable named "a.out"

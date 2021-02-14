@@ -1,0 +1,68 @@
+rm -f connect180deg connect180deg.o
+mpif90 -g -I/usr/include/openmpi-x86_64 -I/s/chopin/l/grad/stonea/projects/gridweaver/runtimelib -c connect180deg.F90
+connect180deg.F90:17.21:
+
+    type(Subgrid) :: 
+                     1
+Error: Invalid character in name at (1)
+connect180deg.F90:61.18:
+
+    gr_connectBtoT = grid_new("gr_connectBtoT")
+                  1
+Error: Symbol 'gr_connectbtot' at (1) has no IMPLICIT type
+connect180deg.F90:62.18:
+
+    gr_connectLtoR = grid_new("gr_connectLtoR")
+                  1
+Error: Symbol 'gr_connectltor' at (1) has no IMPLICIT type
+connect180deg.F90:60.18:
+
+    gr_connectRtoL = grid_new("gr_connectRtoL")
+                  1
+Error: Symbol 'gr_connectrtol' at (1) has no IMPLICIT type
+connect180deg.F90:59.18:
+
+    gr_connectTtoB = grid_new("gr_connectTtoB")
+                  1
+Error: Symbol 'gr_connectttob' at (1) has no IMPLICIT type
+connect180deg.F90:54.22:
+
+    sg_connectBtoT_sg1 = subgrid_new("sg_connectBtoT_sg1", 10, 10)
+                      1
+Error: Symbol 'sg_connectbtot_sg1' at (1) has no IMPLICIT type
+connect180deg.F90:55.22:
+
+    sg_connectBtoT_sg2 = subgrid_new("sg_connectBtoT_sg2", 10, 10)
+                      1
+Error: Symbol 'sg_connectbtot_sg2' at (1) has no IMPLICIT type
+connect180deg.F90:56.22:
+
+    sg_connectLtoR_sg1 = subgrid_new("sg_connectLtoR_sg1", 10, 10)
+                      1
+Error: Symbol 'sg_connectltor_sg1' at (1) has no IMPLICIT type
+connect180deg.F90:57.22:
+
+    sg_connectLtoR_sg2 = subgrid_new("sg_connectLtoR_sg2", 10, 10)
+                      1
+Error: Symbol 'sg_connectltor_sg2' at (1) has no IMPLICIT type
+connect180deg.F90:52.22:
+
+    sg_connectRtoL_sg1 = subgrid_new("sg_connectRtoL_sg1", 10, 10)
+                      1
+Error: Symbol 'sg_connectrtol_sg1' at (1) has no IMPLICIT type
+connect180deg.F90:53.22:
+
+    sg_connectRtoL_sg2 = subgrid_new("sg_connectRtoL_sg2", 10, 10)
+                      1
+Error: Symbol 'sg_connectrtol_sg2' at (1) has no IMPLICIT type
+connect180deg.F90:50.22:
+
+    sg_connectTtoB_sg1 = subgrid_new("sg_connectTtoB_sg1", 10, 10)
+                      1
+Error: Symbol 'sg_connectttob_sg1' at (1) has no IMPLICIT type
+connect180deg.F90:51.22:
+
+    sg_connectTtoB_sg2 = subgrid_new("sg_connectTtoB_sg2", 10, 10)
+                      1
+Error: Symbol 'sg_connectttob_sg2' at (1) has no IMPLICIT type
+make: *** [connect180deg.o] Error 1

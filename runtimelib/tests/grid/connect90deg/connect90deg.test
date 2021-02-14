@@ -1,0 +1,12 @@
+#!/usr/bin/python
+
+import commands
+import os
+import time
+
+global passed
+global processes
+
+rebuild()
+runProg("./connect90deg", "connect90deg")
+

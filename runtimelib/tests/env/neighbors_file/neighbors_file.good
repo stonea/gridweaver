@@ -1,0 +1,50 @@
+
+Environment contains no neighbors.
+Environment contains no subgrids.
+Environment contains no grids.
+Environment contains no distributions.
+Environment contains no schedules.
+Neighbor east {
+    x = 1
+    y = 0
+}
+
+Neighbor north {
+    x = 0
+    y = 1
+}
+
+Neighbor north_east {
+    x = 1
+    y = 1
+}
+
+Neighbor north_west {
+    x = -1
+    y = 1
+}
+
+Neighbor south {
+    x = 0
+    y = -1
+}
+
+Neighbor south_east {
+    x = 1
+    y = -1
+}
+
+Neighbor south_west {
+    x = -1
+    y = -1
+}
+
+Neighbor west {
+    x = -1
+    y = 0
+}
+
+Environment contains no subgrids.
+Environment contains no grids.
+Environment contains no distributions.
+Environment contains no schedules.

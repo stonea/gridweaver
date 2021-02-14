@@ -1,0 +1,195 @@
+
+Neighbor east {
+    x = 1
+    y = 0
+}
+
+Neighbor north {
+    x = 0
+    y = 1
+}
+
+Neighbor north_east {
+    x = 1
+    y = 1
+}
+
+Neighbor north_west {
+    x = -1
+    y = 1
+}
+
+Neighbor south {
+    x = 0
+    y = -1
+}
+
+Neighbor south_east {
+    x = 1
+    y = -1
+}
+
+Neighbor south_west {
+    x = -1
+    y = -1
+}
+
+Neighbor west {
+    x = -1
+    y = 0
+}
+
+Subgrid sg_connectBtoL_sg {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectBtoL_sgBR {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectBtoR_sg {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectBtoR_sgBL {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectLtoB_sg {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectLtoB_sgTL {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectLtoT_sg {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectLtoT_sgBL {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectRtoB_sg {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectRtoB_sgTR {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectRtoT_sg {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectRtoT_sgBR {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectTtoL_sg {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectTtoL_sgTR {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectTtoR_sg {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_connectTtoR_sgTL {
+    w = 10
+    h = 10
+}
+
+Grid gr_connectBtoL {
+    subgrids = [sg_connectBtoL_sg, sg_connectBtoL_sgBR]
+    srcRegions = [(1,0 - 10,0  BL), (0,1 - 0,10  BL)]
+    srcSubgrids = [sg_connectBtoL_sg, sg_connectBtoL_sgBR]
+    tgtRegions = [(1,1 - 1,10  BL), (1,1 - 10,1  BL)]
+    tgtSubgrids = [sg_connectBtoL_sgBR, sg_connectBtoL_sg]
+    rotations = [2, 2]
+}
+
+Grid gr_connectBtoR {
+    subgrids = [sg_connectBtoR_sg, sg_connectBtoR_sgBL]
+    srcRegions = [(1,0 - 10,0  BL), (11,1 - 11,10  BL)]
+    srcSubgrids = [sg_connectBtoR_sg, sg_connectBtoR_sgBL]
+    tgtRegions = [(10,1 - 10,10  BL), (1,1 - 10,1  BL)]
+    tgtSubgrids = [sg_connectBtoR_sgBL, sg_connectBtoR_sg]
+    rotations = [2, 2]
+}
+
+Grid gr_connectLtoB {
+    subgrids = [sg_connectLtoB_sg, sg_connectLtoB_sgTL]
+    srcRegions = [(0,1 - 0,10  BL), (1,0 - 10,0  BL)]
+    srcSubgrids = [sg_connectLtoB_sg, sg_connectLtoB_sgTL]
+    tgtRegions = [(1,1 - 10,1  BL), (1,1 - 1,10  BL)]
+    tgtSubgrids = [sg_connectLtoB_sgTL, sg_connectLtoB_sg]
+    rotations = [2, 2]
+}
+
+Grid gr_connectLtoT {
+    subgrids = [sg_connectLtoT_sg, sg_connectLtoT_sgBL]
+    srcRegions = [(0,1 - 0,10  BL), (1,11 - 10,11  BL)]
+    srcSubgrids = [sg_connectLtoT_sg, sg_connectLtoT_sgBL]
+    tgtRegions = [(1,10 - 10,10  BL), (1,1 - 1,10  BL)]
+    tgtSubgrids = [sg_connectLtoT_sgBL, sg_connectLtoT_sg]
+    rotations = [2, 2]
+}
+
+Grid gr_connectRtoB {
+    subgrids = [sg_connectRtoB_sg, sg_connectRtoB_sgTR]
+    srcRegions = [(11,1 - 11,10  BL), (1,0 - 10,0  BL)]
+    srcSubgrids = [sg_connectRtoB_sg, sg_connectRtoB_sgTR]
+    tgtRegions = [(1,1 - 10,1  BL), (10,1 - 10,10  BL)]
+    tgtSubgrids = [sg_connectRtoB_sgTR, sg_connectRtoB_sg]
+    rotations = [2, 2]
+}
+
+Grid gr_connectRtoT {
+    subgrids = [sg_connectRtoT_sg, sg_connectRtoT_sgBR]
+    srcRegions = [(11,1 - 11,10  BL), (1,11 - 10,11  BL)]
+    srcSubgrids = [sg_connectRtoT_sg, sg_connectRtoT_sgBR]
+    tgtRegions = [(1,10 - 10,10  BL), (10,1 - 10,10  BL)]
+    tgtSubgrids = [sg_connectRtoT_sgBR, sg_connectRtoT_sg]
+    rotations = [2, 2]
+}
+
+Grid gr_connectTtoL {
+    subgrids = [sg_connectTtoL_sg, sg_connectTtoL_sgTR]
+    srcRegions = [(1,11 - 10,11  BL), (0,1 - 0,10  BL)]
+    srcSubgrids = [sg_connectTtoL_sg, sg_connectTtoL_sgTR]
+    tgtRegions = [(1,1 - 1,10  BL), (1,10 - 10,10  BL)]
+    tgtSubgrids = [sg_connectTtoL_sgTR, sg_connectTtoL_sg]
+    rotations = [2, 2]
+}
+
+Grid gr_connectTtoR {
+    subgrids = [sg_connectTtoR_sg, sg_connectTtoR_sgTL]
+    srcRegions = [(1,11 - 10,11  BL), (11,1 - 11,10  BL)]
+    srcSubgrids = [sg_connectTtoR_sg, sg_connectTtoR_sgTL]
+    tgtRegions = [(10,1 - 10,10  BL), (1,10 - 10,10  BL)]
+    tgtSubgrids = [sg_connectTtoR_sgTL, sg_connectTtoR_sg]
+    rotations = [2, 2]
+}
+
+Environment contains no distributions.
+Environment contains no schedules.

@@ -1,0 +1,119 @@
+
+Neighbor east {
+    x = 1
+    y = 0
+}
+
+Neighbor north {
+    x = 0
+    y = 1
+}
+
+Neighbor north_east {
+    x = 1
+    y = 1
+}
+
+Neighbor north_west {
+    x = -1
+    y = 1
+}
+
+Neighbor south {
+    x = 0
+    y = -1
+}
+
+Neighbor south_east {
+    x = 1
+    y = -1
+}
+
+Neighbor south_west {
+    x = -1
+    y = -1
+}
+
+Neighbor west {
+    x = -1
+    y = 0
+}
+
+Subgrid sg_adjacentBT_B {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_adjacentBT_T {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_adjacentLR_L {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_adjacentLR_R {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_adjacentRL_L {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_adjacentRL_R {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_adjacentTB_B {
+    w = 10
+    h = 10
+}
+
+Subgrid sg_adjacentTB_T {
+    w = 10
+    h = 10
+}
+
+Grid gr_adjacentBT {
+    subgrids = [sg_adjacentBT_B, sg_adjacentBT_T]
+    srcRegions = [(1,0 - 10,0  BL), (1,11 - 10,11  BL)]
+    srcSubgrids = [sg_adjacentBT_T, sg_adjacentBT_B]
+    tgtRegions = [(1,10 - 10,10  BL), (1,1 - 10,1  BL)]
+    tgtSubgrids = [sg_adjacentBT_B, sg_adjacentBT_T]
+    rotations = [0, 0]
+}
+
+Grid gr_adjacentLR {
+    subgrids = [sg_adjacentLR_L, sg_adjacentLR_R]
+    srcRegions = [(11,1 - 11,10  BL), (0,1 - 0,10  BL)]
+    srcSubgrids = [sg_adjacentLR_L, sg_adjacentLR_R]
+    tgtRegions = [(1,1 - 1,10  BL), (10,1 - 10,10  BL)]
+    tgtSubgrids = [sg_adjacentLR_R, sg_adjacentLR_L]
+    rotations = [0, 0]
+}
+
+Grid gr_adjacentRL {
+    subgrids = [sg_adjacentRL_R, sg_adjacentRL_L]
+    srcRegions = [(11,1 - 11,10  BL), (0,1 - 0,10  BL)]
+    srcSubgrids = [sg_adjacentRL_L, sg_adjacentRL_R]
+    tgtRegions = [(1,1 - 1,10  BL), (10,1 - 10,10  BL)]
+    tgtSubgrids = [sg_adjacentRL_R, sg_adjacentRL_L]
+    rotations = [0, 0]
+}
+
+Grid gr_adjacentTB {
+    subgrids = [sg_adjacentTB_T, sg_adjacentTB_B]
+    srcRegions = [(1,0 - 10,0  BL), (1,11 - 10,11  BL)]
+    srcSubgrids = [sg_adjacentTB_T, sg_adjacentTB_B]
+    tgtRegions = [(1,10 - 10,10  BL), (1,1 - 10,1  BL)]
+    tgtSubgrids = [sg_adjacentTB_B, sg_adjacentTB_T]
+    rotations = [0, 0]
+}
+
+Environment contains no distributions.
+Environment contains no schedules.

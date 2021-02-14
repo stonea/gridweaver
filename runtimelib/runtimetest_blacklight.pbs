@@ -1,0 +1,23 @@
+#!/bin/csh
+#PBS -l ncpus=48
+#PBS -l walltime=30:00
+#PBS -j oe
+#PBS -q batch
+
+set echo
+
+set DIR="gridweaver/runtimelib"
+set EXEC="gridweaver/runtimelib"
+
+ja
+
+#move to my $SCRATCH directory
+cd $SCRATCH
+
+#copy executable to $SCRATCH
+cp $HOME/$DIR/$EXEC .
+
+#run my executable
+mpirun -np $PBS_NCPUS ./$EXEC
+
+ja -chlst

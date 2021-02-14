@@ -1,0 +1,57 @@
+
+Neighbor east {
+    x = 1
+    y = 0
+}
+
+Neighbor north {
+    x = 0
+    y = 1
+}
+
+Neighbor north_east {
+    x = 1
+    y = 1
+}
+
+Neighbor north_west {
+    x = -1
+    y = 1
+}
+
+Neighbor south {
+    x = 0
+    y = -1
+}
+
+Neighbor south_east {
+    x = 1
+    y = -1
+}
+
+Neighbor south_west {
+    x = -1
+    y = -1
+}
+
+Neighbor west {
+    x = -1
+    y = 0
+}
+
+Subgrid sg_tripole {
+    w = 10
+    h = 10
+}
+
+Grid gr_tripole {
+    subgrids = [sg_tripole, sg_tripole]
+    srcRegions = [(0,1 - 0,10  BL), (11,1 - 11,10  BL), (1,11 - 5,11  BL), (6,11 - 10,11  BL)]
+    srcSubgrids = [sg_tripole, sg_tripole, sg_tripole, sg_tripole]
+    tgtRegions = [(10,1 - 10,10  BL), (1,1 - 1,10  BL), (6,10 - 10,10  BR), (1,10 - 5,10  BR)]
+    tgtSubgrids = [sg_tripole, sg_tripole, sg_tripole, sg_tripole]
+    rotations = [4, 4, 4, 4]
+}
+
+Environment contains no distributions.
+Environment contains no schedules.

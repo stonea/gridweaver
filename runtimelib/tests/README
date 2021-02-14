@@ -1,0 +1,123 @@
+================================================================================
+Tests:
+================================================================================
+
+    env/            Tests that ensure that environmental objects can be
+                    constructed, stored, and read back in.
+
+       /neighbors_construct         Construct several neighbor objects, print
+                                    their contents the console.
+    
+       /neighbors_file              Read in several neighbor objects from a
+                                    file, print their contents the console.
+
+       /subgrids_construct          Like neighbors_construct but for subgrids.
+    
+       /subgrids_file               Like neighbors_file but for subgrids. 
+
+       /grid_construct              Like neighbors_construct but for subgrids.
+    
+       /grid_file                   Like neighbors_file but for subgrids. 
+
+       /distribution_construct      Like neighbors_construct but for
+                                    distributions.
+    
+       /distribution_file           Like neighbors_file but for distributions. 
+
+
+    grid/           Tests construction of grids with various topologies.
+
+        /adjacent           Grids with two subgrids located adjacent to one
+                            another.
+
+        /connectSideBySide  Grids connected together using the connect functions
+                            that place subgrids side by side (equivalent to
+                            adjacent).
+
+
+        /connect90deg       Grids connected together using the connect functions
+                            that place subgrids next to eachother with a 90
+                            degree turn.
+
+        /connect180deg      Grids connected together using the connect functions
+                            that place subgrids next to eachother with a 180
+                            degree turn.
+
+        /wrapping           Grids with borders that wrap.
+
+        /mirroring          Grid with borders that mirror.
+
+        /folding            Grid with borders that fold.
+
+        /dipole             Miniature model of dipole grid.
+
+        /tripole            Miniature model of tripole grid.
+
+        /cubed_sphere       Miniature model of cubed-sphere grid.
+
+        /icosahedral        Miniature model of icosahedral grid.
+        
+        /dipole             Miniature model of dipole grid built using
+                            convenience functions.
+        
+        /tripole            Miniature model of tripole grid built using
+                            convenience functions.
+        
+        /cubed_sphere       Miniature model of cubed-sphere grid built using
+                            convenience functions.
+        
+        /icosahedral        Miniature model of icosahedral grid built using
+                            convenience functions.
+
+
+    dist/           Tests various distributions
+
+       /fill_block   Construct a fill block distribution on a simple grid
+
+       /block_fill   Construct a block fill distribution on a simple grid
+
+       /block_block  Construct a block block distribution on a simple grid
+
+       /block_cyclic Construct a block cyclic distribution on a simple grid
+
+
+    data/           Tests that ensure we can read in data using various
+                    distributions.
+
+       /data_fill_block_construct   Construct a data object for a simple grid
+                                    with a fill-block distribution.
+                                    
+       /data_fill_block_file        From a file, read in a data object for a
+                                    simple grid with a fill-block distribution.
+
+       /data_block_fill_construct   Similar to data_fille_block_construct but
+                                    for a different distribution.
+        
+       /data_block_fill_file        Similar to data_fill_block_file but for a
+                                    different distribution.
+
+       /data_block_block_construct  Similar to data_fille_block_construct but
+                                    for a different distribution.
+
+       /data_block_fill_file        Similar to data_fill_block_file but for a
+                                    different distribution.
+
+       /data_block_cyclic_construct     Similar to data_fille_block_construct
+                                        but for a different distribution.
+
+       /data_block_fill_file        Similar to data_fill_block_file but for a
+                                    different distribution.
+
+       /data_dipole_construct       Construct a data object for a dipole grid
+                                    that uses a block-block distribution.
+
+       /data_tripole                Construct a data object for a tripole grid
+                                    that uses a block-block distribution.
+
+       /data_cubed_sphere           Construct a data object for a cubed-sphere
+                                    grid that uses a block-block distribution.
+
+       /data_icosahedral            Construct a data object for an icosahedral
+                                    grid that uses a block-block distribution.
+
+

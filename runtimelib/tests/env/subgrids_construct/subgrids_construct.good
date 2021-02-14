@@ -1,0 +1,14 @@
+
+Environment contains no neighbors.
+Subgrid subgrid_large {
+    w = 12345
+    h = 12345
+}
+
+Subgrid subgrid_small {
+    w = 10
+    h = 10
+}
+
+Environment contains no distributions.
+Environment contains no schedules.

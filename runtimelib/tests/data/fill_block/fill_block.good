@@ -1,0 +1,75 @@
+TODO: applyFillBlock is assuming all subgrids of g are the same size.
+y = 1  gbid = 1  procID = 0
+y = 3  gbid = 2  procID = 1
+y = 5  gbid = 3  procID = 2
+y = 7  gbid = 4  procID = 3
+y = 9  gbid = 5  procID = 0
+
+Neighbor east {
+    x = 1
+    y = 0
+}
+
+Neighbor north {
+    x = 0
+    y = 1
+}
+
+Neighbor north_east {
+    x = 1
+    y = 1
+}
+
+Neighbor north_west {
+    x = -1
+    y = 1
+}
+
+Neighbor south {
+    x = 0
+    y = -1
+}
+
+Neighbor south_east {
+    x = 1
+    y = -1
+}
+
+Neighbor south_west {
+    x = -1
+    y = -1
+}
+
+Neighbor west {
+    x = -1
+    y = 0
+}
+
+Subgrid sg {
+    w = 10
+    h = 10
+}
+
+Grid gr {
+    subgrids = [sg]
+    srcRegions = []
+    srcSubgrids = []
+    tgtRegions = []
+    tgtSubgrids = []
+    rotations = []
+}
+
+Distribution dist {
+    grid = gr
+    nProcs = 4
+    blkW = 10
+    blkH = 2
+    sg2gbid = [(sg: 1)]
+    proc2nLbid = [2, 1, 1, 1]
+    gbid2proc = [0, 1, 2, 3, 0]
+    gbid2lbid = [1, 1, 1, 1, 2]
+    lbid2gbid@0 = [1, 5]
+    lbid2gbid@1 = [2]
+    lbid2gbid@2 = [3]
+    lbid2gbid@3 = [4]
+}

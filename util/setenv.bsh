@@ -1,0 +1,28 @@
+#!/bin/bash
+
+######
+# Set any environmental variables the metarouting projct requires to be set.
+# This script is expected to be executed from the root of the metarouting
+# project directory.
+######
+
+
+# I grabbed this little snippet from:
+# http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-in
+
+SCRIPT_PATH="${BASH_SOURCE[0]}";                                                                                                                             
+if([ -h "${SCRIPT_PATH}" ])then 
+    while([ -h "${SCRIPT_PATH}" ]) do
+            SCRIPT_PATH=`readlink "${SCRIPT_PATH}"`; 
+    done 
+fi                                                                                                                                            
+pushd . > /dev/null
+cd `dirname ${SCRIPT_PATH}` > /dev/null
+SCRIPT_PATH=`pwd`
+popd  > /dev/null
+
+export MAIN_PATH=$SCRIPT_PATH/..
+
+export PATH=$PATH:$MAIN_PATH/util
+export PATH=$PATH:$MAIN_PATH/build/classes
+export CLASSPATH=$CLASSPATH:$MAIN_PATH/build/classes/
