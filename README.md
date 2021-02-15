@@ -87,7 +87,7 @@ program StencilOnTripole
 
     ! Create a tripole grid
     call grid_new(g)
-    call grid_addSubgrid(sg)
+    call grid_addSubgrid(g, sg)
 
     ! Wrap left and right borders
     call grid_addBorder( 0, 1, 0, M, sg, N+1, 1, N+1, M, sg)
