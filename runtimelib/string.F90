@@ -49,7 +49,7 @@ module mod_String
         do j = 1,i-1
             self%val(j:j) = from(j)
         end do
-        self%len = i
+        self%len = i-1
     end subroutine
 
     integer function string_size(self)

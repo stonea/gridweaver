@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="24cm" height="15cm" viewBox="22 19 480 297" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.02; stroke: #000000" x="262.55" y="20" width="240" height="200"/>
+  <g>
+    <rect style="fill: #ffffff" x="22.55" y="60" width="196.8" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 0.02; stroke: #000000" x="22.55" y="60" width="196.8" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="120.95" y="81.9">
+      <tspan x="120.95" y="81.9">Compiler driver</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="282.55" y="160" width="194.9" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 0.02; stroke: #000000" x="282.55" y="160" width="194.9" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="380" y="181.9">
+      <tspan x="380" y="181.9">Fortran Library</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="302.55" y="60" width="153.2" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 0.02; stroke: #000000" x="302.55" y="60" width="153.2" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="379.15" y="81.9">
+      <tspan x="379.15" y="81.9">C++ Library</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="62.55" y="280" width="101.2" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 0.02; stroke: #000000" x="62.55" y="280" width="101.2" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="113.15" y="301.9">
+      <tspan x="113.15" y="301.9">Fortran code</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 0.02; stroke: #000000" x1="219.35" y1="78" x2="295.048" y2="78"/>
+    <polygon style="fill: #000000" points="302.548,78 292.548,83 295.048,78 292.548,73 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 0.02; stroke: #000000" points="302.548,78 292.548,83 295.048,78 292.548,73 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 0.02; stroke: #000000" x1="380" y1="160" x2="379.25" y2="103.502"/>
+    <polygon style="fill: #000000" points="379.15,96.0022 384.282,105.935 379.25,103.502 374.283,106.068 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 0.02; stroke: #000000" points="379.15,96.0022 384.282,105.935 379.25,103.502 374.283,106.068 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 0.02; stroke: #000000" x1="160.22" y1="280.008" x2="372.992" y2="198.679"/>
+    <polygon style="fill: #000000" points="379.998,196.001 372.442,204.242 372.992,198.679 368.872,194.901 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 0.02; stroke: #000000" points="379.998,196.001 372.442,204.242 372.992,198.679 368.872,194.901 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 0.02; stroke: #000000" x1="120.95" y1="96" x2="113.468" y2="272.504"/>
+    <polygon style="fill: #000000" points="113.15,279.998 108.578,269.795 113.468,272.504 118.569,270.219 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 0.02; stroke: #000000" points="113.15,279.998 108.578,269.795 113.468,272.504 118.569,270.219 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:22.5778;font-family:sanserif;font-style:normal;font-weight:normal" x="262.55" y="40">
+    <tspan x="262.55" y="40">GridWeaver libaries</tspan>
+  </text>
+</svg>

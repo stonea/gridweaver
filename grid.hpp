@@ -16,6 +16,11 @@
 #include "iprintable.hpp"
 #include "iserializable.hpp"
 #include "ienvironmental.hpp"
+//#include <set>
+//#include <list>
+//#include "cellFieldPicture.hpp"
+
+class Subgrid;
 
 /**
  * Initialization function for the grid module.
@@ -30,6 +35,22 @@ enum Orientation {
     BR,     // bottom-right
     TL,     // top-left
     TR      // top-right
+};
+
+/** Represents a location in the global coordinate space */
+struct GlobalCoordinate : public virtual IPrintable {
+    Subgrid *sg;
+    int x, y;
+
+    GlobalCoordinate(Subgrid *_sg, int _x, int _y) :
+        sg(_sg),
+        x(_x),
+        y(_y)
+    { }
+    virtual void print(std::ostream &out) const;
+    virtual void printSimp(std::ostream &out) const;
+
+    bool operator<(const struct GlobalCoordinate& rhs) const;
 };
 
 /**
@@ -114,6 +135,30 @@ class Region : public virtual IPrintable,
     
         /** Return true if (x,y) is contained in this region */
         bool contains(int x, int y) const;
+
+        /**
+         * Return true if rhs is horizontally flipped relative to this
+         * region.
+         */
+        bool isHorizFlipRelativeTo(const Region &rhs) const;
+
+        /**
+         * Return true if rhs is vertically flipped relative to this
+         * region.
+         */
+        bool isVertFlipRelativeTo(const Region &rhs)  const;
+
+        /**
+         * Return true if the shape of rhs is a 90 degree flip of this
+         * region.
+         */
+        bool is90degFlip(const Region &rhs) const;
+
+        /**
+         * Reorient the point to use the orientation of tgt
+         */
+        void reorient(Region tgt, int &x, int &y, bool accountForSelf=true, bool flip=false) const;
+
     ///@}
 
     // ================================
@@ -121,12 +166,42 @@ class Region : public virtual IPrintable,
     // ================================
     /** @name Arithmetic Operations */
     ///@{
+
+        /**
+         * Determine the intersection of two regions.
+         *
+         * Example:
+         */
+        Region intersect(const Region &rhs) const;
+        
+        /**
+         * Given a region embedded in this region determine the analogous region
+         * embedded in the target.
+         */
+        Region analogousRegion(const Region &reg, const Region &tgt) const;
+
+        /**
+         * Find the intersection of this region and rhs, then determine the
+         * analogous region of the cut in tgt.
+         */
+        void cutAnalogously(const Region &rhs, const Region &tgt,
+                            Region &resInSrc, Region &resInTgt) const;
+
+        /**
+         * Flip the region horizontally.
+         */
+        void flipHoriz();
+
+        /**
+         * Flip the region vertically.
+         */
+        void flipVert();
+
         //Region operator+(Neighbor *neigh);
         //Region operator-(Neighbor *neigh);
         //Region intersect(Region rhs);
         //Region expand(vector<Neighbor*> neighs);
         //Region expandIntoMultiple(vector<int> sizes);
-        //Region analogousRegion(Region r, Region r2);
     ///@}
    
     // =======================
@@ -166,6 +241,10 @@ class Region : public virtual IPrintable,
          */
         void translate(int deltaX, int deltaY);
 
+        /**
+         * Set region to be empty
+         */
+        void clear();
     ///@}
 
     //static void reorient(int &ptX, int &ptY, Orientation o1, Orientation o2);
@@ -276,6 +355,11 @@ class Subgrid : public virtual IPrintable,
 
         /** Return the height of the subgrid. */
         int h() const { return mH; }
+    
+        int sgid() const { return mSGID; }
+
+        std::string symbolicWidth()  { return msW; }
+        std::string symbolicHeight() { return msH; }
 
         /**
          * Return the region of the subgrid that includes the topmost elements
@@ -344,6 +428,7 @@ class Subgrid : public virtual IPrintable,
         void setWidth(int w)  { mW = w; }
         void setHeight(int h) { mH = h; }
         void setExtents(int w, int h) { mW = w; mH = h; }
+        void setSymbolicExtents(std::string w, std::string h) { msW = w; msH = h; }
     ///@}
 
   protected:
@@ -351,11 +436,12 @@ class Subgrid : public virtual IPrintable,
     // - [Construction] -
     // =======================
         /** Instantiate a new subgrid object using the specified identifier. */
-        Subgrid(const std::string &name);
+        Subgrid(const std::string &name, const int sgid);
 
   private:
     std::string  mName;
-    int mW, mH;
+    std::string msW, msH;
+    int mW, mH, mSGID;
 };
 
 
@@ -390,7 +476,7 @@ class Grid : public virtual IPrintable,
         virtual std::string getID() const { return mName; }
         
         /**
-         * Return the number of.  Subgrid ID's (SGIDs) range between
+         * Return the number of subgrids.  Subgrid ID's (SGIDs) range between
          * [1, numSubgrids()].
          */
         int numSubgrids() const { return mSubgrids.size(); }
@@ -404,6 +490,65 @@ class Grid : public virtual IPrintable,
          * Return true if this grid contains the specified subgrid.
          */
         bool containsSubgrid(Subgrid *sg) const;
+
+        /**
+         * Return how many neighbors we have to pass through to rotate 0
+         * degrees in this grid.
+         */
+        int orient0() const;
+
+        /**
+         * Return how many neighbors we have to pass through to rotate 45
+         * degrees in this grid.
+         */
+        int orient45() const;
+
+        /**
+         * Return how many neighbors we have to pass through to rotate 90
+         * degrees in this grid.
+         */
+        int orient90() const;
+        
+        /**
+         * Return how many neighbors we have to pass through to rotate 135
+         * degrees in this grid.
+         */
+        int orient135() const;
+
+        /**
+         * Return how many neighbors we have to pass through to rotate 180
+         * degrees in this grid.
+         */
+        int orient180() const;
+
+        /**
+         * Return how many neighbors we have to pass through to rotate 225
+         * degrees in this grid.
+         */
+        int orient225() const;
+
+        /**
+         * Return how many neighbors we have to pass through to rotate 270
+         * degrees in this grid.
+         */
+        int orient270() const;
+
+        /**
+         * Return how many neighbors we have to pass through to rotate 315
+         * degrees in this grid.
+         */
+        int orient315() const;
+
+        /**
+         * Return how many neighbors we have to pass through to rotate 360
+         * degrees in this grid.
+         */
+        int orient360() const;
+
+        /** 
+         * If the specified coordinate lies in a border map translate it.
+         */
+        GlobalCoordinate resolveBMap(const GlobalCoordinate &src) const;
     ///@}
     
     // =======================
@@ -422,178 +567,8 @@ class Grid : public virtual IPrintable,
         void addBorder(const Region &srcRegion, Subgrid *srcSG,
                        const Region &tgtRegion, Subgrid *tgtSG, int rotation);
         
-        //-------------------------------------------------------
-        
-        /**
-         * Connect the right side of one subgrid to the left side of another.
-         **/
-        void placeAdjacentLR(Subgrid *sgL, Subgrid *sgR);
-
-        /**
-         * Place two subgrids horzontally adjacent to one another going right to
-         * left.
-         **/
-        void placeAdjacentRL(Subgrid *sgR, Subgrid *sgL);
-        
-        /**
-         * Place two subgrids vertically adjacent to one another going top to
-         * bottom.
-         **/
-        void placeAdjacentTB(Subgrid *sgT, Subgrid *sgB);
-        
-        /**
-         * Place two subgrids vertically adjacent to one another going bottom to
-         * top.
-         **/
-        void placeAdjacentBT(Subgrid *sgB, Subgrid *sgT);
-
-        //-------------------------------------------------------
-        
-        /**
-         * Connect the top side of the first subgrid to the bottom side of the
-         * second.  This is equivalent to placeAdjacentBT.
-         **/
-        void connectTtoB(Subgrid *sg1, Subgrid *sg2);
-
-        /**
-         * Connect the right side of the first subgrid to the left side of the
-         * second.  This is equivalent to placeAdjacentLR.
-         **/
-        void connectRtoL(Subgrid *sg1, Subgrid *sg2);
-
-        /**
-         * Connect the bottom side of the first subgrid to the top side of the
-         * second.  This is equivalent to placeAdjacentTB.
-         **/
-        void connectBtoT(Subgrid *sg1, Subgrid *sg2);
-
-        /**
-         * Connect the left side of the first subgrid to the right side of the
-         * second.  This is equivalent to placeAdjacentRL.
-         **/
-        void connectLtoR(Subgrid *sg1, Subgrid *sg2);
-        
-        //-------------------------------------------------------
-        
-        /**
-         * Connect the right side of the first subgrid to the top side of the
-         * second.
-         **/
-        void connectLtoT(Subgrid *sg, Subgrid *sgBL);
-
-        /**
-         * Connect the right side of the first subgrid to the bottom side of the
-         * second.
-         **/
-        void connectLtoB(Subgrid *sg, Subgrid *sgTL);
-
-        /**
-         * Connect the right side of the first subgrid to the top side of the
-         * second.
-         **/
-        void connectRtoT(Subgrid *sg, Subgrid *sgBR);
-
-        /**
-         * Connect the right side of the first subgrid to the bottom side of the
-         * second.
-         **/
-        void connectRtoB(Subgrid *sg, Subgrid *sgTR);
-
-        /**
-         * Connect the top side of the first subgrid to the left side of the
-         * second.
-         **/
-        void connectTtoL(Subgrid *sg, Subgrid *sgTR);
-
-        /**
-         * Connect the top side of the first subgrid to the right side of the
-         * second.
-         **/
-        void connectTtoR(Subgrid *sg, Subgrid *sgTL);
-
-        /**
-         * Connect the bottom side of the first subgrid to the left side of the
-         * second.
-         **/
-        void connectBtoL(Subgrid *sg, Subgrid *sgBR);
-
-        /**
-         * Connect the bottom side of the first subgrid to the right side of the
-         * second.
-         **/
-        void connectBtoR(Subgrid *sg, Subgrid *sgBL);
-                
-        //-------------------------------------------------------
-        
-        /**
-         * Connect the left sides of two subgrids together.  The bottom-most
-         * point of sgT will connect to the top-most point of sgB.
-         */
-        void connectLtoL(Subgrid *sgT, Subgrid *sgB);
-        
-        /**
-         * Connect the right sides of two subgrids together.  The bottom-most
-         * point of sgT will connect to the top-most point of sgB.
-         */
-        void connectRtoR(Subgrid *sgT, Subgrid *sgB);
-        
-        /**
-         * Connect the top sides of two subgrids together.  The right-most
-         * point of sgL will connect to the left-most point of sgR.
-         */
-        void connectTtoT(Subgrid *sgL, Subgrid *sgR);
-        
-        /**
-         * Connect the bottom sides of two subgrids together.  The right-most
-         * point of sgL will connect to the left-most point of sgR.
-         */
-        void connectBtoB(Subgrid *sgL, Subgrid *sgR);
-        
-        //-------------------------------------------------------
-        
-        /** Wrap the left border around to the right border of a subgrid. */
-        void wrapLR(Subgrid *sgT);
-        
-        /** Wrap the top border around to the bottom border of a subgrid. */
-        void wrapTB(Subgrid *sgB);
-        
-
-        //-------------------------------------------------------
-
-        /** Mirror the top border of a subgrid. */
-        void mirrorT(Subgrid *sg);
-
-        /** Mirror the bottom border of a subgrid. */
-        void mirrorB(Subgrid *sg);
-
-        /** Mirror the left border of a subgrid. */
-        void mirrorL(Subgrid *sg);
-
-        /** Mirror the right border of a subgrid. */
-        void mirrorR(Subgrid *sg);
-
-        //-------------------------------------------------------
-        
-        /** Fold the top border of a subgrid on itself. */
-        void foldT(Subgrid *sg);
-
-        /** Fold the bottom border of a subgrid on itself. */
-        void foldB(Subgrid *sg);
-
-        /** Fold the left border of a subgrid on itself. */
-        void foldL(Subgrid *sg);
-
-        /** Fold the right border of a subgrid on itself. */
-        void foldR(Subgrid *sg);
     ///@}
 
-  protected:
-    // =======================
-    // - [Construction] -
-    // =======================
-    Grid(const std::string &name);
-
-  private:
     std::string mName;
     std::vector<Subgrid*>  mSubgrids;
     std::vector<Region>    mBorderSrcRegions;
@@ -602,15 +577,17 @@ class Grid : public virtual IPrintable,
     std::vector<Subgrid*>  mBorderTgtSubgrids;
     std::vector<int>       mBorderRotation;
 
-
+  protected:
+    // =======================
+    // - [Construction] -
+    // =======================
+    Grid(const std::string &name);
+    
     // =======================
     // - [Constants] -
     // =======================
         //static const int BMAP_HDL__NO_MAP = -1; // Specifies a lack of a border
                                                 // mapping.
-
-
 };
 
-#endif
 /** @}*/

@@ -21,7 +21,7 @@ Schedule::Schedule(const string &name) :
 {
 }
 
-void Schedule::calculate(Grid *g, Distribution *dist) {
+void Schedule::calculate(Grid *g, Distribution *dist, int depth) {
     // Copy parameters into member variables
     mGrid = g;
     mDist = dist;
@@ -39,7 +39,8 @@ void Schedule::calculate(Grid *g, Distribution *dist) {
             // this block (that is get the region for the block than expand it
             // to include the points in its halo).
             Region rgnDataAccessed = mDist->gbidRegion(gbid);
-            rgnDataAccessed.expand(-1, -1, 1, 1);
+            //rgnDataAccessed.expand(-1, -1, 1, 1);
+            rgnDataAccessed.expand(-depth, -depth, depth, depth);
             
             // Find all blocks that intersect with the region of data accessed
             // by the given block
@@ -58,6 +59,51 @@ void Schedule::calculate(Grid *g, Distribution *dist) {
                 registerTransfer(*i, r, gbid, r);
             }
                 
+            // Iterate through border mappings and register a transfer if
+            // there's any overlap with the region of accessed points of block
+            // gbid
+            for(int i = 0; i < mGrid->mBorderSrcRegions.size(); i++) {
+                // Check that the border mapping is for the appropriate subgrid
+                if(mGrid->mBorderSrcSubgrids[i] != sg) continue;
+
+                // Check for overlap; stop with this border map if there is
+                // no overlap
+                Region srcIntersection =
+                    rgnDataAccessed.intersect(mGrid->mBorderSrcRegions[i]);
+                if(srcIntersection.isEmpty()) continue;
+
+                // Determine the analogous region on the target side
+                Region analogousRegion = 
+                    mGrid->mBorderSrcRegions[i].analogousRegion(
+                        srcIntersection, mGrid->mBorderTgtRegions[i]);
+
+                // Find all blocks that intersect with the analogous region
+                set<int> overlappingBlocks =
+                    dist->gbidsIntersectingRegion(
+                        mGrid->mBorderTgtSubgrids[i], analogousRegion);
+
+                //cout << "Check region: " << analogousRegion << endl;
+                //cout << "Number of overlapping blocks: " << overlappingBlocks.size() << endl;
+
+                // Iterate through each of the overlapping blocks and register a
+                // transfer for the region that overlaps the block and the
+                // region of accessed points of block gbid
+                for(set<int>::iterator j  = overlappingBlocks.begin();
+                                       j != overlappingBlocks.end(); j++)
+                {
+                    Region regOnHalo, regOnBorder;
+
+                    Region r = mDist->gbidRegion(*j);
+
+                    analogousRegion.cutAnalogously(
+                        r, 
+                        srcIntersection, 
+                        regOnBorder,
+                        regOnHalo);
+                    
+                    registerTransfer(*j, regOnBorder, gbid, regOnHalo);
+                }
+            }
         }
     }
 
@@ -67,10 +113,128 @@ void Schedule::calculate(Grid *g, Distribution *dist) {
 }
 
 
+void Schedule::calculateGhostNodePlan(Grid *g, Distribution *dist, int depth) {
+    // Copy parameters into member variables
+    mGrid = g;
+    mDist = dist;
+    int nProcs = dist->numProcs();
+
+    // Create a maps: proc X (gbid received from) -> (set of coordinates)
+    map<int, set<GlobalCoordinate> > coordinatesProcRecvs[nProcs];
+
+    // Iterate through each process gathering the coordinates needed for it
+    for(int pid = 0; pid < nProcs; pid++) {
+        // Iterate through every local block
+        for(int lbid = 1; lbid <= dist->numLclBlocksForProc(pid); lbid++) {
+            // Get information about the block
+            int gbid    = mDist->lbid2gbid(pid, lbid);
+            Subgrid *sg = mDist->gbidSubgrid(gbid);
+
+            // If this is an interior block we don't need to calculate ghost
+            // nodes for it
+            if(mDist->isInteriorBlock(gbid)) { continue; }
+
+            // Get a list of nodes reachable from the block, have processor
+            // PID recall that it needs to store these
+            set<GlobalCoordinate> coordinates = 
+                breadthFirstExpansionFromBlock(gbid, depth);
+
+            // Insert coordinates in maps
+            for(set<GlobalCoordinate>::iterator coord = coordinates.begin();
+                coord != coordinates.end(); coord++)
+            {
+                int recvFromGbid = mDist->gbidAtPos(coord->sg, coord->x, coord->y);
+                coordinatesProcRecvs[pid][recvFromGbid].insert(*coord);
+            }
+        }
+    }
+
+    // Iterate through each process checking to see if it receives a message
+    // from this proc.  If so create a sending message to it.
+    mnGhostMsgsRecv = 0;
+    mnGhostMsgsSend = 0;
+    for(int pidRecv = 0; pidRecv < nProcs; pidRecv++) {
+        // Iterate through every block local block to see if its sends to
+        // pidRecv
+        for(int lbidSend  = 1;
+                lbidSend <= dist->numLclBlocksForProc(myRank()); lbidSend++)
+        {
+            // Get information about the block
+            int gbidSend = mDist->lbid2gbid(myRank(), lbidSend);
+
+            // If pidRecv should receive nodes from gbidSend construct a sending
+            // transfer from gbidSend
+            if(!coordinatesProcRecvs[pidRecv][gbidSend].empty()) {
+                // Find the message to place the sending side of the
+                // transfer in.  If it doesn't already exists then create
+                // it.
+                int msgID = -1;
+                for(int j = 0; j < mGhostMsgSendTo.size(); j++) {
+                    if(pidRecv == mGhostMsgSendTo[j]) {
+                        msgID = j; break;
+                    }
+                }
+                if(msgID == -1) {
+                    mnGhostMsgsSend++;
+                    mGhostMsgSendTo.push_back(pidRecv);
+                    mTransferGhostCoordsSend.push_back(vector<GlobalCoordinate>());
+                    msgID = mGhostMsgSendTo.size() - 1;
+                }
+
+                // Add coordinates to the message
+                for(set<GlobalCoordinate>::iterator
+                        j  = coordinatesProcRecvs[pidRecv][gbidSend].begin();
+                        j != coordinatesProcRecvs[pidRecv][gbidSend].end(); j++)
+                {
+                    mTransferGhostCoordsSend[msgID].push_back(*j);
+                }
+            }
+        }
+    }
+
+    // Iterate through each block this processor receives from
+    for(map<int, set<GlobalCoordinate> >::const_iterator 
+        gbidIter  = coordinatesProcRecvs[myRank()].begin();
+        gbidIter != coordinatesProcRecvs[myRank()].end(); gbidIter++)
+    {
+        int gbidSend = gbidIter->first;
+        int lbidSend = mDist->gbid2lbid(gbidSend);
+        int pidSend  = mDist->gbidProc(gbidSend);
+
+        // No need to create a message if we don't receive from gbidSend
+        if(coordinatesProcRecvs[myRank()][gbidSend].size() == 0) { continue; }
+
+        // Find the message to place the receiving side of the
+        // transfer in.  If it doesn't already exists then create
+        // it.
+        int msgID = -1;
+        for(int j = 0; j < mGhostMsgRecvFrom.size(); j++) {
+            if(pidSend == mGhostMsgRecvFrom[j]) {
+                msgID = j; break;
+            }
+        }
+        if(msgID == -1) {
+            mnGhostMsgsRecv++;
+            mGhostMsgRecvFrom.push_back(pidSend);
+            mTransferGhostCoordsRecv.push_back(vector<GlobalCoordinate>());
+            msgID = mGhostMsgRecvFrom.size() - 1;
+        }
+
+        // Add coordinates to the message
+        for(set<GlobalCoordinate>::iterator
+            j  = coordinatesProcRecvs[myRank()][gbidSend].begin();
+            j != coordinatesProcRecvs[myRank()][gbidSend].end(); j++)
+        {
+            mTransferGhostCoordsRecv[msgID].push_back(*j);
+        }
+    }
+}
+
 void Schedule::print(ostream &out) const {
     // Dummy iterators
     vector<int>::iterator intVectorDummy;
     vector<Region>::iterator regionVectorDummy;
+    vector<GlobalCoordinate>::iterator globalCoordVectorDummy;
 
     if(isMasterRank()) {
         printObj_start(out, "Schedule", mName);
@@ -93,7 +257,7 @@ void Schedule::print(ostream &out) const {
 
             if(isMasterRank()) {
                 printObj_startSection(out,
-                    "Receiving info for proccess " + str(pid) + ":");
+                    "Halo receiving info for proccess " + str(pid) + ":");
             }
             printObj_propertyFromRank(out, pid, "nMsgRecv",
                 str(mMsgRecvFrom.size()));
@@ -130,7 +294,7 @@ void Schedule::print(ostream &out) const {
     // create a separator between the receiver side and sender side info
     if(isMasterRank()) {
         cout << endl;
-        cout << indt << hiFmt("               * * * * * * * * *");
+        cout << indt << hiFmt("    * * * * * * * * * * * * * * * * * * * *");
         cout << endl;
     }
 
@@ -142,7 +306,7 @@ void Schedule::print(ostream &out) const {
 
             if(isMasterRank()) {
                 printObj_startSection(out,
-                    "Sending info for proccess " + str(pid) + ":");
+                    "Halo sending info for proccess " + str(pid) + ":");
             }
             printObj_propertyFromRank(out, pid, "nMsgSend",
                 str(mMsgSendTo.size()));
@@ -167,6 +331,84 @@ void Schedule::print(ostream &out) const {
                                       : regionVectorDummy,
                     (myRank() == pid) ? mTransferRegionSend[i].end()
                                       : regionVectorDummy);
+            }
+
+            if(isMasterRank()) {
+                printObj_endSection(out);
+            }
+        }
+
+    // create a separator between halo and ghost schedules
+    if(isMasterRank()) {
+        cout << endl;
+        cout << indt << hiFmt("    =======================================");
+        cout << endl;
+    }
+
+    // --- Print out receiving information for ghosts on each proccess: ---
+        for(int pid = 0; pid < mDist->numProcs(); pid++) {
+            // Determine how many messages are received on the specified pid
+            int nGhostMsgsRecv = mnGhostMsgsRecv;
+            MPI_Bcast(&nGhostMsgsRecv, 1, MPI_INT, pid, MPI_COMM_WORLD);
+
+            if(isMasterRank()) {
+                printObj_startSection(out,
+                    "Ghost receiving info for proccess " + str(pid) + ":");
+            }
+            printObj_propertyFromRank(out, pid, "nGhostMsgRecv",
+                str(mGhostMsgRecvFrom.size()));
+            printObj_propertyFromRank(out, pid, "ghostMsgRecvFrom");
+            printValsFromRank(out, pid, mGhostMsgRecvFrom.begin(),
+                                        mGhostMsgRecvFrom.end());
+            
+            // print coordinates for each message
+            for(int i = 0; i < nGhostMsgsRecv; i++) {
+                printObj_propertyFromRank(out, pid, "mTransferGhostCoordsRecv[" +
+                                  str(i) + "]");
+
+                printValsFromRank(out, pid,
+                    (myRank() == pid) ? mTransferGhostCoordsRecv[i].begin()
+                                      : globalCoordVectorDummy,
+                    (myRank() == pid) ? mTransferGhostCoordsRecv[i].end()
+                                      : globalCoordVectorDummy);
+            }
+
+            if(isMasterRank()) {
+                printObj_endSection(out);
+            }
+        }
+
+    // create a separator between the receiver side and sender side info
+    if(isMasterRank()) {
+        cout << endl;
+        cout << indt << hiFmt("    * * * * * * * * * * * * * * * * * * * *");
+        cout << endl;
+    }
+
+    // --- Print out sending information for ghosts on each proccess: ---
+        for(int pid = 0; pid < mDist->numProcs(); pid++) {
+            // Determine how many messages are sent on the specified pid
+            int nGhostMsgsSend = mnGhostMsgsSend;
+            MPI_Bcast(&nGhostMsgsSend, 1, MPI_INT, pid, MPI_COMM_WORLD);
+
+            if(isMasterRank()) {
+                printObj_startSection(out,
+                    "Ghost sending info for proccess " + str(pid) + ":");
+            }
+            printObj_propertyFromRank(out, pid, "nGhostMsgSend",
+                str(mGhostMsgSendTo.size()));
+            printObj_propertyFromRank(out, pid, "ghostMsgSendTo");
+            printValsFromRank(out, pid, mGhostMsgSendTo.begin(), mGhostMsgSendTo.end());
+            
+            // print transferSendFromLBID and mTransferRegionSend for each proccess
+            for(int i = 0; i < nGhostMsgsSend; i++) {
+                printObj_propertyFromRank(out, pid, "mTransferGhostCoordsSend[" +
+                                          str(i) + "]");
+                printValsFromRank(out, pid,
+                    (myRank() == pid) ? mTransferGhostCoordsSend[i].begin()
+                                      : globalCoordVectorDummy,
+                    (myRank() == pid) ? mTransferGhostCoordsSend[i].end()
+                                      : globalCoordVectorDummy);
             }
 
             if(isMasterRank()) {
@@ -212,6 +454,7 @@ void Schedule::input(istream &in) {
     BinIO::in(in, &mTransferRegionSend);
     #endif
 }
+
 
 void Schedule::transferSizesToFortran(
     int &size_msgRecvFrom,
@@ -331,9 +574,97 @@ void Schedule::transferToFortran(
     }
 }
 
+void Schedule::transferGhostSizesToFortran(
+    int &size_ghostMsgRecvFrom,
+    int &size_recvGhostMsgStart,
+    int &size_recvGhostMsgSG,
+    int &size_recvGhostMsgX,
+    int &size_recvGhostMsgY,
+    int &size_ghostMsgSendTo,
+    int &size_sendGhostMsgStart,
+    int &size_sendGhostMsgSG,
+    int &size_sendGhostMsgX,
+    int &size_sendGhostMsgY)
+{
+    size_ghostMsgRecvFrom  = mnGhostMsgsRecv;
+    size_recvGhostMsgStart = mnGhostMsgsRecv+1;
+    size_ghostMsgSendTo    = mnGhostMsgsSend;
+    size_sendGhostMsgStart = mnGhostMsgsSend+1;
+
+    int nCoordsRecv = 0;
+    for(int i = 0; i < mnGhostMsgsRecv; i++) {
+        nCoordsRecv += mTransferGhostCoordsRecv[i].size();
+    }
+    size_recvGhostMsgSG = nCoordsRecv;
+    size_recvGhostMsgX  = nCoordsRecv;
+    size_recvGhostMsgY  = nCoordsRecv;
+
+    int nCoordsSend = 0;
+    for(int i = 0; i < mnGhostMsgsSend; i++) {
+        nCoordsSend += mTransferGhostCoordsSend[i].size();
+    }
+    size_sendGhostMsgSG = nCoordsSend;
+    size_sendGhostMsgX  = nCoordsSend;
+    size_sendGhostMsgY  = nCoordsSend;
+}
+
+void Schedule::transferGhostsToFortran(
+    int &nGhostMsgsRecv,
+    int *ghostMsgRecvFrom,
+    int *recvGhostMsgStart,
+    int *recvGhostMsgSG,
+    int *recvGhostMsgX,
+    int *recvGhostMsgY,
+    int &nGhostMsgsSend,
+    int *ghostMsgSendTo,
+    int *sendGhostMsgStart,
+    int *sendGhostMsgSG,
+    int *sendGhostMsgX,
+    int *sendGhostMsgY)
+{
+    // Transfer receiving messages
+    nGhostMsgsRecv = mnGhostMsgsRecv;
+    int offset = 0;
+    for(int i = 0; i < mnGhostMsgsRecv; i++) {
+        ghostMsgRecvFrom[i] = mGhostMsgRecvFrom[i];
+        recvGhostMsgStart[i] = offset + 1;
+
+        // Store coordinates
+        for(int j = 0; j < mTransferGhostCoordsRecv[i].size(); j++) {
+            recvGhostMsgSG[offset] = mTransferGhostCoordsRecv[i][j].sg->sgid();
+            recvGhostMsgX[offset] = mTransferGhostCoordsRecv[i][j].x;
+            recvGhostMsgY[offset] = mTransferGhostCoordsRecv[i][j].y;
+
+            offset++;
+        }
+    }
+    recvGhostMsgStart[mnGhostMsgsRecv] = offset + 1;
+    
+    // Transfer sending messages
+    nGhostMsgsSend = mnGhostMsgsSend;
+    offset = 0;
+    for(int i = 0; i < mnGhostMsgsSend; i++) {
+        ghostMsgSendTo[i] = mGhostMsgSendTo[i];
+        sendGhostMsgStart[i] = offset + 1;
+
+        // Store coordinates
+        for(int j = 0; j < mTransferGhostCoordsSend[i].size(); j++) {
+            sendGhostMsgSG[offset] = mTransferGhostCoordsSend[i][j].sg->sgid();
+            sendGhostMsgX[offset] = mTransferGhostCoordsSend[i][j].x;
+            sendGhostMsgY[offset] = mTransferGhostCoordsSend[i][j].y;
+
+            offset++;
+        }
+    }
+    sendGhostMsgStart[mnGhostMsgsSend] = offset + 1;
+}
+
 void Schedule::registerTransfer(int srcGbid, const Region &srcReg,
                                 int tgtGbid, const Region &tgtReg)
 {
+    //cout << "REGISTER TRANSFER " << srcReg << " in " << srcGbid << " -> "
+    //     << tgtReg << " in " << tgtGbid << endl;
+
     // Convert srcReg and tgtReg so that they are in the index space of the
     // block instead of the subgrid.  That is position (1,1) should be the
     // lower-left corner of srcGbid for srcReg and of tgtGbid for tgtReg.
@@ -347,6 +678,9 @@ void Schedule::registerTransfer(int srcGbid, const Region &srcReg,
     // Determine the PID of the receiving and sending processes
     int pidRecv = mDist->gbidProc(tgtGbid);
     int pidSend = mDist->gbidProc(srcGbid);
+
+    // If either pid is -1 don't bother with the transfer
+    if(pidRecv == -1 || pidSend == -1) { return; }
 
     //-- Create the receiving side message --//
     if(myRank() == pidRecv) {
@@ -396,6 +730,114 @@ void Schedule::registerTransfer(int srcGbid, const Region &srcReg,
 }
 
 
+set<GlobalCoordinate> Schedule::breadthFirstExpansionFromBlock(
+    int gbid, int d) const
+{
+    Subgrid *sg = mDist->gbidSubgrid(gbid);
+    int blkXOffset = mDist->gbidRegion(gbid).lowX()-1;
+    int blkYOffset = mDist->gbidRegion(gbid).lowY()-1;
+
+    set<GlobalCoordinate> visited, result;
+    set<GlobalCoordinate> *prevFrontier, *nextFrontier, *tmp;
+    prevFrontier = new set<GlobalCoordinate>();
+    nextFrontier = new set<GlobalCoordinate>();
+
+    //cout << "------------[ GBID: " << gbid << " (";
+    //cout << sg->getID() << ") ]----------------" << endl;
+
+    int blkW = MIN(mDist->blockWidth(), sg->w());
+    int blkH = MIN(mDist->blockHeight(), sg->h());
+    // Set a ring of interior block as visited
+    if(sg->w() > 1 && sg->h() > 1) {
+        for(int i = 2; i <= mDist->blockWidth() - 1; i++) {
+            visited.insert(GlobalCoordinate(
+                sg, i+blkXOffset, 2+blkYOffset));
+            visited.insert(GlobalCoordinate(
+                sg, i+blkXOffset, mDist->blockHeight()-1+blkYOffset));
+        }
+        for(int j = 2; j <= mDist->blockHeight() - 1; j++) {
+            visited.insert(GlobalCoordinate(
+                sg, 2+blkXOffset, j+blkYOffset));
+            visited.insert(GlobalCoordinate(
+                sg, mDist->blockWidth()-1+blkXOffset, j+blkYOffset));
+        }
+    }
+
+    // Set frontier to the ring of nodes bordering the block
+    //cout << "offsets: " << blkW << " " << blkH << " "
+    //     << blkXOffset << " " << blkYOffset << endl;
+    for(int i = 1; i <= blkW; i++) {
+        prevFrontier->insert(GlobalCoordinate(sg, i+blkXOffset,    1+blkYOffset));
+        prevFrontier->insert(GlobalCoordinate(sg, i+blkXOffset, blkH+blkYOffset));
+        visited.insert(GlobalCoordinate(sg, i+blkXOffset,    1+blkYOffset));
+        visited.insert(GlobalCoordinate(sg, i+blkXOffset, blkH+blkYOffset));
+    }
+    for(int j = 1; j <= blkH; j++) {
+        prevFrontier->insert(GlobalCoordinate(sg,    1+blkXOffset, j+blkYOffset));
+        prevFrontier->insert(GlobalCoordinate(sg, blkW+blkXOffset, j+blkYOffset));
+        visited.insert(GlobalCoordinate(sg,    1+blkXOffset, j+blkYOffset));
+        visited.insert(GlobalCoordinate(sg, blkW+blkXOffset, j+blkYOffset));
+    }
+
+    //cout << "Visited  = "; printSet(cout, visited); cout << endl;
+    //cout << "Frontier = "; printSet(cout, *prevFrontier); cout << endl;
+    //cout << endl << endl;
+
+    // Iterate for each layer of depth
+    for(int idxLayer = 1; idxLayer <= d; idxLayer++) {
+        // Visit each node on the current frontier
+        for(set<GlobalCoordinate>::iterator n = prevFrontier->begin();
+            n != prevFrontier->end(); n++)
+        {
+            // See if we can expand to each neighbor
+            for(std::map<std::string, Neighbor*>::const_iterator neighIter =
+                Environment::neighborsBegin();
+                neighIter != Environment::neighborsEnd();
+                neighIter++)
+            {
+                Neighbor *neigh = neighIter->second;
+
+                // Grab the global coordinate visited from the neighbor
+                GlobalCoordinate neighCoord(
+                    n->sg, n->x + neigh->x(), n->y + neigh->y());
+
+                // Use border map to translate if needed
+                neighCoord = mGrid->resolveBMap(neighCoord);
+                
+                // Ignore this neighbor if we've already visited it or if
+                // it falls into an unfilled halo location
+                if(visited.find(neighCoord) != visited.end()) { continue; }
+                if(nextFrontier->find(neighCoord) != nextFrontier->end()) { continue; }
+                if(prevFrontier->find(neighCoord) != prevFrontier->end()) { continue; }
+                if(neighCoord.x <= 0 || neighCoord.y <= 0 ||
+                   neighCoord.x > neighCoord.sg->w() ||
+                   neighCoord.y > neighCoord.sg->h()) { continue; }
+
+                visited.insert(neighCoord);
+                result.insert(neighCoord);
+                nextFrontier->insert(neighCoord);
+            }
+        }
+
+        // Swap frontiers for next iteration
+        tmp = prevFrontier;
+        prevFrontier = nextFrontier;
+        nextFrontier = tmp;
+        nextFrontier->clear();
+    }
+
+    //printSet(cout, result);
+    //cout << endl;
+
+    // Clean up allocate data
+    delete prevFrontier;
+    delete nextFrontier;
+
+    return result;
+}
+
+
+
 void Schedule::saveIntVector(std::ostream &out,
                              const std::vector<int> &obj)
 {
@@ -432,4 +874,3 @@ void Schedule::saveRegionVectorVector(
 {
     BinIO::out(out, obj.begin(), obj.end(), &saveRegionVector);
 }
-

@@ -62,6 +62,10 @@ module mod_wrapper
               grid_connectBtoR,                 &
               grid_wrapLR,                      &
               grid_wrapTB,                      &
+              !grid_placeAdjacentWithOffsetLR,   &
+              !grid_placeAdjacentWithOffsetRL,   &
+              !grid_placeAdjacentWithOffsetTB,   &
+              !grid_placeAdjacentWithOffsetBT,   &
               grid_mirrorT,                     &
               grid_mirrorB,                     &
               grid_mirrorL,                     &
@@ -300,6 +304,42 @@ module mod_wrapper
         character(kind=c_char) :: g(*)
         character(kind=c_char) :: sg(*)
     end subroutine
+
+    !subroutine cwrap__grid_placeAdjacentWithOffsetLR(g, sgL, sgR, shiftUp) &
+    !    bind(C, name="__grid_placeAdjacentWithOffsetLR")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sgL(*)
+    !    character(kind=c_char) :: sgR(*)
+    !    integer(c_size_t)      :: shiftUp
+    !end subroutine
+
+    !subroutine cwrap__grid_placeAdjacentWithOffsetRL(g, sgR, sgL, shiftUp) &
+    !    bind(C, name="__grid_placeAdjacentWithOffsetRL")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sgL(*)
+    !    character(kind=c_char) :: sgR(*)
+    !    integer(c_size_t)      :: shiftUp
+    !end subroutine
+
+    !subroutine cwrap__grid_placeAdjacentWithOffsetTB(g, sgT, sgB, shiftRight) &
+    !    bind(C, name="__grid_placeAdjacentWithOffsetTB")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sgT(*)
+    !    character(kind=c_char) :: sgB(*)
+    !    integer(c_size_t)      :: shiftRight
+    !end subroutine
+
+    !subroutine cwrap__grid_placeAdjacentWithOffsetBT(g, sgB, sgT, shiftRight) &
+    !    bind(C, name="__grid_placeAdjacentWithOffsetBT")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sgB(*)
+    !    character(kind=c_char) :: sgT(*)
+    !    integer(c_size_t)      :: shiftRight
+    !end subroutine
 
     subroutine cwrap__grid_mirrorT(g, sg) &
         bind(C, name="__grid_mirrorT")
@@ -886,6 +926,58 @@ module mod_wrapper
             call cwrap__grid_wrapTB(cstr(g%id), cstr(sg%id))
         end if
     end subroutine
+
+    !subroutine grid_placeAdjacentWithOffsetLR(g, sgL, sgR, shiftUp)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sgL
+    !    type(Subgrid), intent(in) :: sgR
+    !    integer, intent(in)       :: shiftUp
+
+    !    ! Have master rank execute the command
+    !    if(myRank() == 0) then
+    !        call cwrap__grid_placeAdjacentWithOffsetLR(cstr(g%id),  &
+    !           cstr(sgL%id), cstr(sgR%id), cint(shiftUp))
+    !    end if
+    !end subroutine
+
+    !subroutine grid_placeAdjacentWithOffsetRL(g, sgR, sgL, shiftUp)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sgR
+    !    type(Subgrid), intent(in) :: sgL
+    !    integer, intent(in)       :: shiftUp
+
+    !    ! Have master rank execute the command
+    !    if(myRank() == 0) then
+    !        call cwrap__grid_placeAdjacentWithOffsetRL(cstr(g%id),  &
+    !            cstr(sgR%id), cstr(sgL%id), cint(shiftUp))
+    !    end if
+    !end subroutine
+
+    !subroutine grid_placeAdjacentWithOffsetTB(g, sgT, sgB, shiftRight)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sgT
+    !    type(Subgrid), intent(in) :: sgB
+    !    integer, intent(in)       :: shiftRight
+
+    !    ! Have master rank execute the command
+    !    if(myRank() == 0) then
+    !        call cwrap__grid_placeAdjacentWithOffsetTB(cstr(g%id),  &
+    !            cstr(sgT%id), cstr(sgB%id), cint(shiftRight))
+    !    end if
+    !end subroutine
+
+    !subroutine grid_placeAdjacentWithOffsetBT(g, sgB, sgT, shiftRight)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sgB
+    !    type(Subgrid), intent(in) :: sgT
+    !    integer, intent(in)       :: shiftRight
+
+    !    ! Have master rank execute the command
+    !    if(myRank() == 0) then
+    !        call cwrap__grid_placeAdjacentWithOffsetBT(cstr(g%id),  &
+    !            cstr(sgB%id), cstr(sgT%id), cint(shiftRight))
+    !    end if
+    !end subroutine
 
     subroutine grid_mirrorT(g, sg)
         type(Grid), intent(in)    :: g

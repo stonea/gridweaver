@@ -1,0 +1,7 @@
+Regression tests
+================================
+     
+      Test-name  Description
+    ------------------------------------------------------------------------
+      simple     Simple stencil application on one processor
+      input      Read in data from a file and output it to the console

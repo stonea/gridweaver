@@ -1,0 +1,330 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+<circle cx="71" cy="639" r="28" stroke="black" fill="crimson" />
+<text x="71" y="639" alignment-baseline="central" text-anchor="middle" font-size = "16">
+10
+</text>
+<circle cx="142" cy="639" r="28" stroke="black" fill="crimson" />
+<text x="142" y="639" alignment-baseline="central" text-anchor="middle" font-size = "16">
+10
+</text>
+<circle cx="213" cy="639" r="28" stroke="black" fill="crimson" />
+<text x="213" y="639" alignment-baseline="central" text-anchor="middle" font-size = "16">
+10
+</text>
+<circle cx="284" cy="639" r="28" stroke="black" fill="orange" />
+<text x="284" y="639" alignment-baseline="central" text-anchor="middle" font-size = "16">
+11
+</text>
+<circle cx="355" cy="639" r="28" stroke="black" fill="orange" />
+<text x="355" y="639" alignment-baseline="central" text-anchor="middle" font-size = "16">
+11
+</text>
+<circle cx="426" cy="639" r="28" stroke="black" fill="orange" />
+<text x="426" y="639" alignment-baseline="central" text-anchor="middle" font-size = "16">
+11
+</text>
+<circle cx="497" cy="639" r="28" stroke="black" fill="crimson" />
+<text x="497" y="639" alignment-baseline="central" text-anchor="middle" font-size = "16">
+12
+</text>
+<circle cx="568" cy="639" r="28" stroke="black" fill="crimson" />
+<text x="568" y="639" alignment-baseline="central" text-anchor="middle" font-size = "16">
+12
+</text>
+<circle cx="639" cy="639" r="28" stroke="black" fill="crimson" />
+<text x="639" y="639" alignment-baseline="central" text-anchor="middle" font-size = "16">
+12
+</text>
+<circle cx="71" cy="568" r="28" stroke="black" fill="crimson" />
+<text x="71" y="568" alignment-baseline="central" text-anchor="middle" font-size = "16">
+10
+</text>
+<circle cx="142" cy="568" r="28" stroke="black" fill="crimson" />
+<text x="142" y="568" alignment-baseline="central" text-anchor="middle" font-size = "16">
+10
+</text>
+<circle cx="213" cy="568" r="28" stroke="black" fill="crimson" />
+<text x="213" y="568" alignment-baseline="central" text-anchor="middle" font-size = "16">
+10
+</text>
+<circle cx="284" cy="568" r="28" stroke="black" fill="orange" />
+<text x="284" y="568" alignment-baseline="central" text-anchor="middle" font-size = "16">
+11
+</text>
+<circle cx="355" cy="568" r="28" stroke="black" fill="orange" />
+<text x="355" y="568" alignment-baseline="central" text-anchor="middle" font-size = "16">
+11
+</text>
+<circle cx="426" cy="568" r="28" stroke="black" fill="orange" />
+<text x="426" y="568" alignment-baseline="central" text-anchor="middle" font-size = "16">
+11
+</text>
+<circle cx="497" cy="568" r="28" stroke="black" fill="crimson" />
+<text x="497" y="568" alignment-baseline="central" text-anchor="middle" font-size = "16">
+12
+</text>
+<circle cx="568" cy="568" r="28" stroke="black" fill="crimson" />
+<text x="568" y="568" alignment-baseline="central" text-anchor="middle" font-size = "16">
+12
+</text>
+<circle cx="639" cy="568" r="28" stroke="black" fill="crimson" />
+<text x="639" y="568" alignment-baseline="central" text-anchor="middle" font-size = "16">
+12
+</text>
+<circle cx="71" cy="497" r="28" stroke="black" fill="crimson" />
+<text x="71" y="497" alignment-baseline="central" text-anchor="middle" font-size = "16">
+10
+</text>
+<circle cx="142" cy="497" r="28" stroke="black" fill="crimson" />
+<text x="142" y="497" alignment-baseline="central" text-anchor="middle" font-size = "16">
+10
+</text>
+<circle cx="213" cy="497" r="28" stroke="black" fill="crimson" />
+<text x="213" y="497" alignment-baseline="central" text-anchor="middle" font-size = "16">
+10
+</text>
+<circle cx="284" cy="497" r="28" stroke="black" fill="orange" />
+<text x="284" y="497" alignment-baseline="central" text-anchor="middle" font-size = "16">
+11
+</text>
+<circle cx="355" cy="497" r="28" stroke="black" fill="orange" />
+<text x="355" y="497" alignment-baseline="central" text-anchor="middle" font-size = "16">
+11
+</text>
+<circle cx="426" cy="497" r="28" stroke="black" fill="orange" />
+<text x="426" y="497" alignment-baseline="central" text-anchor="middle" font-size = "16">
+11
+</text>
+<circle cx="497" cy="497" r="28" stroke="black" fill="crimson" />
+<text x="497" y="497" alignment-baseline="central" text-anchor="middle" font-size = "16">
+12
+</text>
+<circle cx="568" cy="497" r="28" stroke="black" fill="crimson" />
+<text x="568" y="497" alignment-baseline="central" text-anchor="middle" font-size = "16">
+12
+</text>
+<circle cx="639" cy="497" r="28" stroke="black" fill="crimson" />
+<text x="639" y="497" alignment-baseline="central" text-anchor="middle" font-size = "16">
+12
+</text>
+<circle cx="71" cy="426" r="28" stroke="black" fill="yellow" />
+<text x="71" y="426" alignment-baseline="central" text-anchor="middle" font-size = "16">
+13
+</text>
+<circle cx="142" cy="426" r="28" stroke="black" fill="yellow" />
+<text x="142" y="426" alignment-baseline="central" text-anchor="middle" font-size = "16">
+13
+</text>
+<circle cx="213" cy="426" r="28" stroke="black" fill="yellow" />
+<text x="213" y="426" alignment-baseline="central" text-anchor="middle" font-size = "16">
+13
+</text>
+<circle cx="284" cy="426" r="28" stroke="black" fill="lightgreen" />
+<text x="284" y="426" alignment-baseline="central" text-anchor="middle" font-size = "16">
+14
+</text>
+<circle cx="355" cy="426" r="28" stroke="black" fill="lightgreen" />
+<text x="355" y="426" alignment-baseline="central" text-anchor="middle" font-size = "16">
+14
+</text>
+<circle cx="426" cy="426" r="28" stroke="black" fill="lightgreen" />
+<text x="426" y="426" alignment-baseline="central" text-anchor="middle" font-size = "16">
+14
+</text>
+<circle cx="497" cy="426" r="28" stroke="black" fill="yellow" />
+<text x="497" y="426" alignment-baseline="central" text-anchor="middle" font-size = "16">
+15
+</text>
+<circle cx="568" cy="426" r="28" stroke="black" fill="yellow" />
+<text x="568" y="426" alignment-baseline="central" text-anchor="middle" font-size = "16">
+15
+</text>
+<circle cx="639" cy="426" r="28" stroke="black" fill="yellow" />
+<text x="639" y="426" alignment-baseline="central" text-anchor="middle" font-size = "16">
+15
+</text>
+<circle cx="71" cy="355" r="28" stroke="black" fill="yellow" />
+<text x="71" y="355" alignment-baseline="central" text-anchor="middle" font-size = "16">
+13
+</text>
+<circle cx="142" cy="355" r="28" stroke="black" fill="yellow" />
+<text x="142" y="355" alignment-baseline="central" text-anchor="middle" font-size = "16">
+13
+</text>
+<circle cx="213" cy="355" r="28" stroke="black" fill="yellow" />
+<text x="213" y="355" alignment-baseline="central" text-anchor="middle" font-size = "16">
+13
+</text>
+<circle cx="284" cy="355" r="28" stroke="black" fill="lightgreen" />
+<text x="284" y="355" alignment-baseline="central" text-anchor="middle" font-size = "16">
+14
+</text>
+<circle cx="355" cy="355" r="28" stroke="black" fill="lightgreen" />
+<text x="355" y="355" alignment-baseline="central" text-anchor="middle" font-size = "16">
+14
+</text>
+<circle cx="426" cy="355" r="28" stroke="black" fill="lightgreen" />
+<text x="426" y="355" alignment-baseline="central" text-anchor="middle" font-size = "16">
+14
+</text>
+<circle cx="497" cy="355" r="28" stroke="black" fill="yellow" />
+<text x="497" y="355" alignment-baseline="central" text-anchor="middle" font-size = "16">
+15
+</text>
+<circle cx="568" cy="355" r="28" stroke="black" fill="yellow" />
+<text x="568" y="355" alignment-baseline="central" text-anchor="middle" font-size = "16">
+15
+</text>
+<circle cx="639" cy="355" r="28" stroke="black" fill="yellow" />
+<text x="639" y="355" alignment-baseline="central" text-anchor="middle" font-size = "16">
+15
+</text>
+<circle cx="71" cy="284" r="28" stroke="black" fill="yellow" />
+<text x="71" y="284" alignment-baseline="central" text-anchor="middle" font-size = "16">
+13
+</text>
+<circle cx="142" cy="284" r="28" stroke="black" fill="yellow" />
+<text x="142" y="284" alignment-baseline="central" text-anchor="middle" font-size = "16">
+13
+</text>
+<circle cx="213" cy="284" r="28" stroke="black" fill="yellow" />
+<text x="213" y="284" alignment-baseline="central" text-anchor="middle" font-size = "16">
+13
+</text>
+<circle cx="284" cy="284" r="28" stroke="black" fill="lightgreen" />
+<text x="284" y="284" alignment-baseline="central" text-anchor="middle" font-size = "16">
+14
+</text>
+<circle cx="355" cy="284" r="28" stroke="black" fill="lightgreen" />
+<text x="355" y="284" alignment-baseline="central" text-anchor="middle" font-size = "16">
+14
+</text>
+<circle cx="426" cy="284" r="28" stroke="black" fill="lightgreen" />
+<text x="426" y="284" alignment-baseline="central" text-anchor="middle" font-size = "16">
+14
+</text>
+<circle cx="497" cy="284" r="28" stroke="black" fill="yellow" />
+<text x="497" y="284" alignment-baseline="central" text-anchor="middle" font-size = "16">
+15
+</text>
+<circle cx="568" cy="284" r="28" stroke="black" fill="yellow" />
+<text x="568" y="284" alignment-baseline="central" text-anchor="middle" font-size = "16">
+15
+</text>
+<circle cx="639" cy="284" r="28" stroke="black" fill="yellow" />
+<text x="639" y="284" alignment-baseline="central" text-anchor="middle" font-size = "16">
+15
+</text>
+<circle cx="71" cy="213" r="28" stroke="black" fill="crimson" />
+<text x="71" y="213" alignment-baseline="central" text-anchor="middle" font-size = "16">
+16
+</text>
+<circle cx="142" cy="213" r="28" stroke="black" fill="crimson" />
+<text x="142" y="213" alignment-baseline="central" text-anchor="middle" font-size = "16">
+16
+</text>
+<circle cx="213" cy="213" r="28" stroke="black" fill="crimson" />
+<text x="213" y="213" alignment-baseline="central" text-anchor="middle" font-size = "16">
+16
+</text>
+<circle cx="284" cy="213" r="28" stroke="black" fill="orange" />
+<text x="284" y="213" alignment-baseline="central" text-anchor="middle" font-size = "16">
+17
+</text>
+<circle cx="355" cy="213" r="28" stroke="black" fill="orange" />
+<text x="355" y="213" alignment-baseline="central" text-anchor="middle" font-size = "16">
+17
+</text>
+<circle cx="426" cy="213" r="28" stroke="black" fill="orange" />
+<text x="426" y="213" alignment-baseline="central" text-anchor="middle" font-size = "16">
+17
+</text>
+<circle cx="497" cy="213" r="28" stroke="black" fill="crimson" />
+<text x="497" y="213" alignment-baseline="central" text-anchor="middle" font-size = "16">
+18
+</text>
+<circle cx="568" cy="213" r="28" stroke="black" fill="crimson" />
+<text x="568" y="213" alignment-baseline="central" text-anchor="middle" font-size = "16">
+18
+</text>
+<circle cx="639" cy="213" r="28" stroke="black" fill="crimson" />
+<text x="639" y="213" alignment-baseline="central" text-anchor="middle" font-size = "16">
+18
+</text>
+<circle cx="71" cy="142" r="28" stroke="black" fill="crimson" />
+<text x="71" y="142" alignment-baseline="central" text-anchor="middle" font-size = "16">
+16
+</text>
+<circle cx="142" cy="142" r="28" stroke="black" fill="crimson" />
+<text x="142" y="142" alignment-baseline="central" text-anchor="middle" font-size = "16">
+16
+</text>
+<circle cx="213" cy="142" r="28" stroke="black" fill="crimson" />
+<text x="213" y="142" alignment-baseline="central" text-anchor="middle" font-size = "16">
+16
+</text>
+<circle cx="284" cy="142" r="28" stroke="black" fill="orange" />
+<text x="284" y="142" alignment-baseline="central" text-anchor="middle" font-size = "16">
+17
+</text>
+<circle cx="355" cy="142" r="28" stroke="black" fill="orange" />
+<text x="355" y="142" alignment-baseline="central" text-anchor="middle" font-size = "16">
+17
+</text>
+<circle cx="426" cy="142" r="28" stroke="black" fill="orange" />
+<text x="426" y="142" alignment-baseline="central" text-anchor="middle" font-size = "16">
+17
+</text>
+<circle cx="497" cy="142" r="28" stroke="black" fill="crimson" />
+<text x="497" y="142" alignment-baseline="central" text-anchor="middle" font-size = "16">
+18
+</text>
+<circle cx="568" cy="142" r="28" stroke="black" fill="crimson" />
+<text x="568" y="142" alignment-baseline="central" text-anchor="middle" font-size = "16">
+18
+</text>
+<circle cx="639" cy="142" r="28" stroke="black" fill="crimson" />
+<text x="639" y="142" alignment-baseline="central" text-anchor="middle" font-size = "16">
+18
+</text>
+<circle cx="71" cy="71" r="28" stroke="black" fill="crimson" />
+<text x="71" y="71" alignment-baseline="central" text-anchor="middle" font-size = "16">
+16
+</text>
+<circle cx="142" cy="71" r="28" stroke="black" fill="crimson" />
+<text x="142" y="71" alignment-baseline="central" text-anchor="middle" font-size = "16">
+16
+</text>
+<circle cx="213" cy="71" r="28" stroke="black" fill="crimson" />
+<text x="213" y="71" alignment-baseline="central" text-anchor="middle" font-size = "16">
+16
+</text>
+<circle cx="284" cy="71" r="28" stroke="black" fill="orange" />
+<text x="284" y="71" alignment-baseline="central" text-anchor="middle" font-size = "16">
+17
+</text>
+<circle cx="355" cy="71" r="28" stroke="black" fill="orange" />
+<text x="355" y="71" alignment-baseline="central" text-anchor="middle" font-size = "16">
+17
+</text>
+<circle cx="426" cy="71" r="28" stroke="black" fill="orange" />
+<text x="426" y="71" alignment-baseline="central" text-anchor="middle" font-size = "16">
+17
+</text>
+<circle cx="497" cy="71" r="28" stroke="black" fill="crimson" />
+<text x="497" y="71" alignment-baseline="central" text-anchor="middle" font-size = "16">
+18
+</text>
+<circle cx="568" cy="71" r="28" stroke="black" fill="crimson" />
+<text x="568" y="71" alignment-baseline="central" text-anchor="middle" font-size = "16">
+18
+</text>
+<circle cx="639" cy="71" r="28" stroke="black" fill="crimson" />
+<text x="639" y="71" alignment-baseline="central" text-anchor="middle" font-size = "16">
+18
+</text>
+</svg>

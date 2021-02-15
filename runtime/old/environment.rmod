@@ -1,0 +1,15 @@
+
+! =================================================================================== 
+! <<Automatically generated for Rose Fortran Separate Compilation, DO NOT MODIFY IT>> 
+! =================================================================================== 
+
+MODULE Environment
+IMPLICIT NONE
+TYPE environmentT
+INTEGER :: nBounds
+INTEGER, DIMENSION(:), POINTER :: bounds
+INTEGER, DIMENSION(:), POINTER :: indices
+
+END TYPE environmentT
+
+END MODULE Environment

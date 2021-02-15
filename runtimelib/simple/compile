@@ -1,0 +1,1 @@
+/s/chopin/l/grad/stonea/projects/gridweaver/gridweaver -g -I/usr/include/openmpi-x86_64 -I/s/chopin/l/grad/stonea/projects/gridweaver/runtimelib -c simple.F90

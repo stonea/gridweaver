@@ -8,6 +8,13 @@
 #include <string>
 #include <iostream>
 using namespace std;
+
+// Maps symbols to environmental objects
+std::map<std::string, IEnvironmental*> gSymbolTable;
+
+
+
+
 /**
  * This visitor finds nodes that mark calls to subroutines and functions in the
  * GridLib library.
@@ -34,11 +41,12 @@ void FindFunctionCalls::visit(SgNode *n) {
         SgFunctionSymbol* func = call->getAssociatedFunctionSymbol();
         name = func->get_name().getString();
         trim(name);
-        if(name.find("environment_", 0) == 0 ||
+        if(name.find("neighbor_", 0) == 0 ||
+           name.find("subgrid_", 0) == 0 ||
+           name.find("grid_", 0) == 0 ||
+           name.find("distribution_", 0) == 0 ||
            name.find("schedule_", 0) == 0 ||
-           name.find("data_", 0) == 0 ||
-           name.find("file_", 0) == 0 ||
-           name.find("string_", 0) == 0)
+           name.find("data_", 0) == 0)
         {
             mCalls.push_back(name);
             mNodes.push_back(call);
@@ -46,11 +54,7 @@ void FindFunctionCalls::visit(SgNode *n) {
     }
 }
 
-
-
-CallsVectorT  CallsAnalysis::analyze(SgProject *proj) {
-    CallsVectorT results;
-
+void CallsAnalysis::analyze(SgProject *proj) {
     // Find calls to GridGen tool
     FindFunctionCalls v;
     v.traverseInputFiles(proj, preorder);
@@ -63,9 +67,96 @@ CallsVectorT  CallsAnalysis::analyze(SgProject *proj) {
         int pos = find(&CALL_IDENT[0], &CALL_IDENT[CALL__NUM_CALLS],
                        call) - &CALL_IDENT[0];
         if(pos != CALL__NUM_CALLS) {
-            results.push_back((*CALL_CONSTRUCTOR[pos])(node));
+            mCalls.push_back((*CALL_CONSTRUCTOR[pos])(node));
         }
     }
 
-    return results;
+    // Construct environmental objects based on call
+    EnvironmentConstructionVisitor envBuilder;
+    envBuilder.accept(mCalls);
 }
+
+void CallsAnalysis::print(std::ostream &out) const {
+    // Iterate through calls
+    for(vector<GridLibCall*>::const_iterator i = mCalls.begin();
+        i != mCalls.end(); i++)
+    {
+        (*i)->print(out);
+    }
+}
+
+Neighbor* CallsAnalysis::getNeighborForFortranVar(const std::string &ftnIdent) const {
+    return dynamic_cast<Neighbor*>(gSymbolTable.find(ftnIdent)->second);
+}
+
+Subgrid* CallsAnalysis::getSubgridForFortranVar(const std::string &ftnIdent) const {
+    return dynamic_cast<Subgrid*>(gSymbolTable.find(ftnIdent)->second);
+}
+
+Grid* CallsAnalysis::getGridForFortranVar(const std::string &ftnIdent) const {
+    return dynamic_cast<Grid*>(gSymbolTable.find(ftnIdent)->second);
+}
+
+Distribution* CallsAnalysis::getDistributionForFortranVar(const std::string &ftnIdent) const {
+    return dynamic_cast<Distribution*>(gSymbolTable.find(ftnIdent)->second);
+}
+
+Schedule* CallsAnalysis::getScheduleForFortranVar(const std::string &ftnIdent) const {
+    return dynamic_cast<Schedule*>(gSymbolTable.find(ftnIdent)->second);
+}
+
+DataObject* CallsAnalysis::getDataObjectForFortranVar(const std::string &ftnIdent) const {
+    return dynamic_cast<DataObject*>(gSymbolTable.find(ftnIdent)->second);
+}
+
+
+void EnvironmentConstructionVisitor::visit__subgrid_new(
+    Call__subgrid_new *call)
+{
+    Subgrid *sg = Environment::newSubgrid(call->envName());
+    sg->setExtents(100, 100);
+    sg->setSymbolicExtents(call->width(), call->height());
+    gSymbolTable.insert(make_pair(call->lhs(), sg));
+}
+
+void EnvironmentConstructionVisitor::visit__grid_new(
+    Call__grid_new *call)
+{
+    Grid *g = Environment::newGrid(call->envName());
+    gSymbolTable.insert(make_pair(call->lhs(), g));
+}
+
+void EnvironmentConstructionVisitor::visit__grid_addSubgrid(
+    Call__grid_addSubgrid *call)
+{
+    Grid     *g = dynamic_cast<Grid*>(gSymbolTable.find(call->grid())->second);
+    Subgrid *sg = dynamic_cast<Subgrid*>(gSymbolTable.find(call->subgrid())->second);
+    g->addSubgrid(sg);
+}
+
+void EnvironmentConstructionVisitor::visit__grid_addBorder(
+    Call__grid_addBorder *call)
+{
+}
+
+void EnvironmentConstructionVisitor::visit__distribution_new(
+    Call__distribution_new *call)
+{
+    Distribution *dist = Environment::newDistribution(call->envName());
+    gSymbolTable.insert(make_pair(call->lhs(), dist));
+}
+
+void EnvironmentConstructionVisitor::visit__schedule_new(
+    Call__schedule_new *call)
+{
+    Schedule *sched = Environment::newSchedule(call->envName());
+    gSymbolTable.insert(make_pair(call->lhs(), sched));
+}
+
+void EnvironmentConstructionVisitor::visit__data_new(
+    Call__data_new *call)
+{
+    DataObject *data = Environment::newDataObject(call->lhs());
+    gSymbolTable.insert(make_pair(call->lhs(), data));
+}
+

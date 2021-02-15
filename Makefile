@@ -4,7 +4,8 @@ LIB__NAME=libgridweaver.a
 COMPILER__NAME=gridweaver
 
 LIB__OBJS=error.o iprintable.o svgprinter.o cellfieldpicture.o vispage.o binIO.o \
-	utils.o grid.o environment.o distribution.o schedule.o runtimewrapper.o
+	utils.o grid.o dataObject.o environment.o distribution.o schedule.o \
+	runtimewrapper.o gridLibCall.o analyses.o codegen.o
 COMPILER__OBJS=gridweaver.o
 
 LIB__CXXFLAGS=-g -I/s/chopin/l/grad/stonea/local/include -fPIC \

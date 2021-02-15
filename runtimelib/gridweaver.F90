@@ -36,51 +36,65 @@ module mod_gridweaver
 
     public :: subgrid_new,      &
               subgrid_width,    &
-              subgrid_height
+              subgrid_height,   &
+              subgrid_getID
 
     public :: grid_new,                         &
               grid_addSubgrid,                  &
               grid_addBorder,                   &
-              grid_placeAdjacentLR,             &
-              grid_placeAdjacentRL,             &
-              grid_placeAdjacentTB,             &
-              grid_placeAdjacentBT,             &
-              grid_connectTtoB,                 &
-              grid_connectRtoL,                 &
-              grid_connectBtoT,                 &
-              grid_connectLtoR,                 &
-              grid_connectLtoT,                 &
-              grid_connectLtoB,                 &
-              grid_connectRtoT,                 &
-              grid_connectRtoB,                 &
-              grid_connectTtoL,                 &
-              grid_connectTtoR,                 &
-              grid_connectBtoL,                 &
-              grid_connectBtoR,                 &
-              grid_wrapLR,                      &
-              grid_wrapTB,                      &
-              grid_mirrorT,                     &
-              grid_mirrorB,                     &
-              grid_mirrorL,                     &
-              grid_mirrorR,                     &
-              grid_foldT,                       &
-              grid_foldB,                       &
-              grid_foldL,                       &
-              grid_foldR,                       &
-              grid_numSubGrids,                 &
-              grid_getSubgrid
+              grid_getSubgrid,                  &
+              !grid_placeAdjacentLR,             &
+              !grid_placeAdjacentRL,             &
+              !grid_placeAdjacentTB,             &
+              !grid_placeAdjacentBT,             &
+              !grid_connectTtoB,                 &
+              !grid_connectRtoL,                 &
+              !grid_connectBtoT,                 &
+              !grid_connectLtoR,                 &
+              !grid_connectLtoT,                 &
+              !grid_connectLtoB,                 &
+              !grid_connectRtoT,                 &
+              !grid_connectRtoB,                 &
+              !grid_connectTtoL,                 &
+              !grid_connectTtoR,                 &
+              !grid_connectBtoL,                 &
+              !grid_connectBtoR,                 &
+              !grid_wrapLR,                      &
+              !grid_wrapTB,                      &
+              !grid_placeAdjacentWithOffsetLR,   &
+              !grid_placeAdjacentWithOffsetRL,   &
+              !grid_placeAdjacentWithOffsetTB,   &
+              !grid_placeAdjacentWithOffsetBT,   &
+              !grid_mirrorT,                     &
+              !grid_mirrorB,                     &
+              !grid_mirrorL,                     &
+              !grid_mirrorR,                     &
+              !grid_foldT,                       &
+              !grid_foldB,                       &
+              !grid_foldL,                       &
+              !grid_foldR,                       &
+              grid_numSubGrids
 
     public :: distribution_new,                 &
               distribution_applyFillBlock,      &
               distribution_applyBlockFill,      &
               distribution_applyBlockCyclic,    &
+              distribution_applyBlankDist,      &
+              distribution_setProcForBlock,     &
+              distribution_gbidAt,              &
+              distribution_gbidAtSGID,          &
               distribution_visualize,           &
               distribution_width,               &
               distribution_height,              &
               distribution_numLocalBlocks,      &
+              distribution_numBlocks,           &
+              distribution_numNodesForProc,     &
               distribution_lbid2gbid,           &
               distribution_gbid2lbid,           &
               distribution_gbid2proc,           &
+              distribution_gbid2sg,             &
+              distribution_firstGbidInSG,       &
+              distribution_lastGbidInSG,        &
               distribution_blockLowX,           &
               distribution_blockLowY,           &
               distribution_blockHighX,          &
@@ -131,7 +145,14 @@ module mod_gridweaver
         character(kind=c_char) :: sg(*)
         integer(c_int)      :: ret
     end subroutine
- 
+
+    subroutine cwrap__subgrid_getID(sg, ret) &
+        bind(C, name="__subgrid_getID")
+        use iso_c_binding
+        character(kind=c_char) :: sg(*)
+        integer(c_int)      :: ret
+    end subroutine
+
     subroutine cwrap__grid_new(g) &
         bind(C, name="__grid_new")
         use iso_c_binding
@@ -157,203 +178,239 @@ module mod_gridweaver
         integer(c_int)      :: rotation
     end subroutine
     
-    subroutine cwrap__grid_placeAdjacentLR(g, sgL, sgR) &
-        bind(C, name="__grid_placeAdjacentLR")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sgL(*)
-        character(kind=c_char) :: sgR(*)
-    end subroutine
+    !subroutine cwrap__grid_placeAdjacentLR(g, sgL, sgR) &
+    !    bind(C, name="__grid_placeAdjacentLR")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sgL(*)
+    !    character(kind=c_char) :: sgR(*)
+    !end subroutine
 
-    subroutine cwrap__grid_placeAdjacentRL(g, sgR, sgL) &
-        bind(C, name="__grid_placeAdjacentRL")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sgR(*)
-        character(kind=c_char) :: sgL(*)
-    end subroutine
+    !subroutine cwrap__grid_placeAdjacentRL(g, sgR, sgL) &
+    !    bind(C, name="__grid_placeAdjacentRL")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sgR(*)
+    !    character(kind=c_char) :: sgL(*)
+    !end subroutine
 
-    subroutine cwrap__grid_placeAdjacentTB(g, sgT, sgB) &
-        bind(C, name="__grid_placeAdjacentTB")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sgT(*)
-        character(kind=c_char) :: sgB(*)
-    end subroutine
+    !subroutine cwrap__grid_placeAdjacentTB(g, sgT, sgB) &
+    !    bind(C, name="__grid_placeAdjacentTB")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sgT(*)
+    !    character(kind=c_char) :: sgB(*)
+    !end subroutine
 
-    subroutine cwrap__grid_placeAdjacentBT(g, sgB, sgT) &
-        bind(C, name="__grid_placeAdjacentBT")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sgB(*)
-        character(kind=c_char) :: sgT(*)
-    end subroutine
+    !subroutine cwrap__grid_placeAdjacentBT(g, sgB, sgT) &
+    !    bind(C, name="__grid_placeAdjacentBT")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sgB(*)
+    !    character(kind=c_char) :: sgT(*)
+    !end subroutine
 
-    subroutine cwrap__grid_connectTtoB(g, sg1, sg2) &
-        bind(C, name="__grid_connectTtoB")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg1(*)
-        character(kind=c_char) :: sg2(*)
-    end subroutine
+    !subroutine cwrap__grid_connectTtoB(g, sg1, sg2) &
+    !    bind(C, name="__grid_connectTtoB")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg1(*)
+    !    character(kind=c_char) :: sg2(*)
+    !end subroutine
 
-    subroutine cwrap__grid_connectRtoL(g, sg1, sg2) &
-        bind(C, name="__grid_connectRtoL")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg1(*)
-        character(kind=c_char) :: sg2(*)
-    end subroutine
+    !subroutine cwrap__grid_connectRtoL(g, sg1, sg2) &
+    !    bind(C, name="__grid_connectRtoL")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg1(*)
+    !    character(kind=c_char) :: sg2(*)
+    !end subroutine
 
-    subroutine cwrap__grid_connectBtoT(g, sg1, sg2) &
-        bind(C, name="__grid_connectBtoT")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg1(*)
-        character(kind=c_char) :: sg2(*)
-    end subroutine
+    !subroutine cwrap__grid_connectBtoT(g, sg1, sg2) &
+    !    bind(C, name="__grid_connectBtoT")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg1(*)
+    !    character(kind=c_char) :: sg2(*)
+    !end subroutine
 
-    subroutine cwrap__grid_connectLtoR(g, sg1, sg2) &
-        bind(C, name="__grid_connectLtoR")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg1(*)
-        character(kind=c_char) :: sg2(*)
-    end subroutine
+    !subroutine cwrap__grid_connectLtoR(g, sg1, sg2) &
+    !    bind(C, name="__grid_connectLtoR")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg1(*)
+    !    character(kind=c_char) :: sg2(*)
+    !end subroutine
 
-    subroutine cwrap__grid_connectLtoT(g, sg,  sgBL) &
-        bind(C, name="__grid_connectLtoT")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-        character(kind=c_char) :: sgBL(*)
-    end subroutine
+    !subroutine cwrap__grid_connectLtoT(g, sg,  sgBL) &
+    !    bind(C, name="__grid_connectLtoT")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !    character(kind=c_char) :: sgBL(*)
+    !end subroutine
 
-    subroutine cwrap__grid_connectLtoB(g, sg,  sgTL) &
-        bind(C, name="__grid_connectLtoB")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-        character(kind=c_char) :: sgTL(*)
-    end subroutine
+    !subroutine cwrap__grid_connectLtoB(g, sg,  sgTL) &
+    !    bind(C, name="__grid_connectLtoB")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !    character(kind=c_char) :: sgTL(*)
+    !end subroutine
 
-    subroutine cwrap__grid_connectRtoT(g, sg,  sgBR) &
-        bind(C, name="__grid_connectRtoT")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-        character(kind=c_char) :: sgBR(*)
-    end subroutine
+    !subroutine cwrap__grid_connectRtoT(g, sg,  sgBR) &
+    !    bind(C, name="__grid_connectRtoT")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !    character(kind=c_char) :: sgBR(*)
+    !end subroutine
 
-    subroutine cwrap__grid_connectRtoB(g, sg,  sgTR) &
-        bind(C, name="__grid_connectRtoB")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-        character(kind=c_char) :: sgTR(*)
-    end subroutine
+    !subroutine cwrap__grid_connectRtoB(g, sg,  sgTR) &
+    !    bind(C, name="__grid_connectRtoB")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !    character(kind=c_char) :: sgTR(*)
+    !end subroutine
 
-    subroutine cwrap__grid_connectTtoL(g, sg,  sgTR) &
-        bind(C, name="__grid_connectTtoL")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-        character(kind=c_char) :: sgTR(*)
-    end subroutine
+    !subroutine cwrap__grid_connectTtoL(g, sg,  sgTR) &
+    !    bind(C, name="__grid_connectTtoL")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !    character(kind=c_char) :: sgTR(*)
+    !end subroutine
 
-    subroutine cwrap__grid_connectTtoR(g, sg,  sgTL) &
-        bind(C, name="__grid_connectTtoR")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-        character(kind=c_char) :: sgTL(*)
-    end subroutine
+    !subroutine cwrap__grid_connectTtoR(g, sg,  sgTL) &
+    !    bind(C, name="__grid_connectTtoR")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !    character(kind=c_char) :: sgTL(*)
+    !end subroutine
 
-    subroutine cwrap__grid_connectBtoL(g, sg,  sgBR) &
-        bind(C, name="__grid_connectBtoL")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-        character(kind=c_char) :: sgBR(*)
-    end subroutine
+    !subroutine cwrap__grid_connectBtoL(g, sg,  sgBR) &
+    !    bind(C, name="__grid_connectBtoL")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !    character(kind=c_char) :: sgBR(*)
+    !end subroutine
 
-    subroutine cwrap__grid_connectBtoR(g, sg,  sgBL) &
-        bind(C, name="__grid_connectBtoR")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-        character(kind=c_char) :: sgBL(*)
-    end subroutine
+    !subroutine cwrap__grid_connectBtoR(g, sg,  sgBL) &
+    !    bind(C, name="__grid_connectBtoR")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !    character(kind=c_char) :: sgBL(*)
+    !end subroutine
 
-    subroutine cwrap__grid_wrapLR(g, sg) &
-        bind(C, name="__grid_wrapLR")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-    end subroutine
+    !subroutine cwrap__grid_wrapLR(g, sg) &
+    !    bind(C, name="__grid_wrapLR")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !end subroutine
 
-    subroutine cwrap__grid_wrapTB(g, sg) &
-        bind(C, name="__grid_wrapTB")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-    end subroutine
+    !subroutine cwrap__grid_wrapTB(g, sg) &
+    !    bind(C, name="__grid_wrapTB")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !end subroutine
 
-    subroutine cwrap__grid_mirrorT(g, sg) &
-        bind(C, name="__grid_mirrorT")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-    end subroutine
+    !subroutine cwrap__grid_placeAdjacentWithOffsetLR(g, sgL, sgR, shiftUp) &
+    !    bind(C, name="__grid_placeAdjacentWithOffsetLR")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sgL(*)
+    !    character(kind=c_char) :: sgR(*)
+    !    integer(c_int)      :: shiftUp
+    !end subroutine
 
-    subroutine cwrap__grid_mirrorB(g, sg) &
-        bind(C, name="__grid_mirrorB")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-    end subroutine
+    !subroutine cwrap__grid_placeAdjacentWithOffsetRL(g, sgR, sgL, shiftUp) &
+    !    bind(C, name="__grid_placeAdjacentWithOffsetRL")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sgL(*)
+    !    character(kind=c_char) :: sgR(*)
+    !    integer(c_int)      :: shiftUp
+    !end subroutine
 
-    subroutine cwrap__grid_mirrorL(g, sg) &
-        bind(C, name="__grid_mirrorL")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-    end subroutine
+    !subroutine cwrap__grid_placeAdjacentWithOffsetTB(g, sgT, sgB, shiftRight) &
+    !    bind(C, name="__grid_placeAdjacentWithOffsetTB")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sgT(*)
+    !    character(kind=c_char) :: sgB(*)
+    !    integer(c_int)      :: shiftRight
+    !end subroutine
 
-    subroutine cwrap__grid_mirrorR(g, sg) &
-        bind(C, name="__grid_mirrorR")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-    end subroutine
+    !subroutine cwrap__grid_placeAdjacentWithOffsetBT(g, sgB, sgT, shiftRight) &
+    !    bind(C, name="__grid_placeAdjacentWithOffsetBT")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sgB(*)
+    !    character(kind=c_char) :: sgT(*)
+    !    integer(c_int)      :: shiftRight
+    !end subroutine
 
-    subroutine cwrap__grid_foldT(g, sg) &
-        bind(C, name="__grid_foldT")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-    end subroutine
+    !subroutine cwrap__grid_mirrorT(g, sg) &
+    !    bind(C, name="__grid_mirrorT")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !end subroutine
 
-    subroutine cwrap__grid_foldB(g, sg) &
-        bind(C, name="__grid_foldB")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-    end subroutine
+    !subroutine cwrap__grid_mirrorB(g, sg) &
+    !    bind(C, name="__grid_mirrorB")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !end subroutine
 
-    subroutine cwrap__grid_foldL(g, sg) &
-        bind(C, name="__grid_foldL")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-    end subroutine
+    !subroutine cwrap__grid_mirrorL(g, sg) &
+    !    bind(C, name="__grid_mirrorL")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !end subroutine
 
-    subroutine cwrap__grid_foldR(g, sg) &
-        bind(C, name="__grid_foldR")
-        use iso_c_binding
-        character(kind=c_char) :: g(*)
-        character(kind=c_char) :: sg(*)
-    end subroutine
+    !subroutine cwrap__grid_mirrorR(g, sg) &
+    !    bind(C, name="__grid_mirrorR")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !end subroutine
+
+    !subroutine cwrap__grid_foldT(g, sg) &
+    !    bind(C, name="__grid_foldT")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !end subroutine
+
+    !subroutine cwrap__grid_foldB(g, sg) &
+    !    bind(C, name="__grid_foldB")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !end subroutine
+
+    !subroutine cwrap__grid_foldL(g, sg) &
+    !    bind(C, name="__grid_foldL")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !end subroutine
+
+    !subroutine cwrap__grid_foldR(g, sg) &
+    !    bind(C, name="__grid_foldR")
+    !    use iso_c_binding
+    !    character(kind=c_char) :: g(*)
+    !    character(kind=c_char) :: sg(*)
+    !end subroutine
 
     subroutine cwrap__grid_numSubgrids(g, ret) &
         bind(C, name="__grid_numSubgrids")
@@ -369,7 +426,6 @@ module mod_gridweaver
         integer(c_int)         :: idx
         character(kind=c_char) :: ret(*)
     end subroutine
-
 
     subroutine cwrap__distribution_new(dist) &
         bind(C, name="__distribution_new")
@@ -401,6 +457,39 @@ module mod_gridweaver
         integer(c_int)      :: nProcs, blkW, blkH
     end subroutine
 
+    subroutine cwrap__distribution_applyBlankDist( &
+        dist, g, nProcs, blkW, blkH) &
+        bind(C, name="__distribution_applyBlankDist")
+        use iso_c_binding
+        character(kind=c_char) :: dist(*), g(*)
+        integer(c_int)      :: nProcs, blkW, blkH
+    end subroutine
+
+    subroutine cwrap__distribution_setProcForBlock( &
+        dist, gbid, rank) &
+        bind(C, name="__distribution_setProcForBlock")
+        use iso_c_binding
+        character(kind=c_char) :: dist(*)
+        integer(c_int)         :: gbid, rank
+    end subroutine
+
+    subroutine cwrap__distribution_gbidAt( &
+        dist, sg, x, y, ret) &
+        bind(C, name="__distribution_gbidAt")
+        use iso_c_binding
+        character(kind=c_char) :: dist(*), sg(*)
+        integer(c_int)         :: x, y, ret
+    end subroutine
+
+    subroutine cwrap__distribution_gbidAtSGID( &
+        dist, sgid, x, y, ret) &
+        bind(C, name="__distribution_gbidAtSGID")
+        use iso_c_binding
+        character(kind=c_char) :: dist(*)
+        integer(c_int)         :: sgid
+        integer(c_int)         :: x, y, ret
+    end subroutine
+
     subroutine cwrap__distribution_visualize(dist, dirName) &
         bind(C, name="__distribution_visualize")
         use iso_c_binding
@@ -428,6 +517,20 @@ module mod_gridweaver
         integer(c_int) :: ret
     end subroutine
 
+    subroutine cwrap__distribution_numBlocks(dist, ret) &
+        bind(C, name="__distribution_numBlocks")
+        use iso_c_binding
+        character(kind=c_char) :: dist(*)
+        integer(c_int) :: ret
+    end subroutine
+
+    subroutine cwrap__distribution_numNodesForProc(dist, pid, ret) &
+        bind(C, name="__distribution_numNodesForProc")
+        use iso_c_binding
+        character(kind=c_char) :: dist(*)
+        integer(c_int) :: pid, ret
+    end subroutine
+
     subroutine cwrap__distribution_lbid2gbid(dist, lbid, ret) &
         bind(C, name="__distribution_lbid2gbid")
         use iso_c_binding
@@ -451,6 +554,31 @@ module mod_gridweaver
         integer(c_int), intent(in) :: gbid
         integer(c_int) :: ret
     end subroutine
+
+    subroutine cwrap__distribution_gbid2sg(dist, gbid, ret) &
+        bind(C, name="__distribution_gbid2sg")
+        use iso_c_binding
+        character(kind=c_char) :: dist(*)
+        integer(c_int), intent(in) :: gbid
+        integer(c_int) :: ret
+    end subroutine
+
+    subroutine cwrap__distribution_firstGbidInSG(dist, sg, ret) &
+        bind(C, name="__distribution_firstGbidInSG")
+        use iso_c_binding
+        character(kind=c_char) :: dist(*)
+        character(kind=c_char) :: sg(*)
+        integer(c_int) :: ret
+    end subroutine
+
+    subroutine cwrap__distribution_lastGbidInSG(dist, sg, ret) &
+        bind(C, name="__distribution_lastGbidInSG")
+        use iso_c_binding
+        character(kind=c_char) :: dist(*)
+        character(kind=c_char) :: sg(*)
+        integer(c_int) :: ret
+    end subroutine
+
 
     subroutine cwrap__distribution_blockLowX(dist, gbid, ret) &
         bind(C, name="__distribution_blockLowX")
@@ -567,7 +695,15 @@ module mod_gridweaver
         call cwrap__subgrid_height(cstr(sg%id), ret)
         subgrid_height = ret
     end function
-    
+
+    integer function subgrid_getID(sg)
+        type(Subgrid)   :: sg
+        integer(c_int)  :: ret
+
+        call cwrap__subgrid_getID(cstr(sg%id), ret)
+        subgrid_getID = ret
+    end function
+  
     function grid_new(g)
         character(len=*), intent(in) :: g
         type(Grid)                   :: grid_new
@@ -607,245 +743,297 @@ module mod_gridweaver
             cint(rotation))
     end subroutine
 
-    subroutine grid_placeAdjacentLR(g, sgL, sgR)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sgL
-        type(Subgrid), intent(in) :: sgR
+    !subroutine grid_placeAdjacentLR(g, sgL, sgR)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sgL
+    !    type(Subgrid), intent(in) :: sgR
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_placeAdjacentLR(cstr(g%id), cstr(sgL%id),      &
+    !        cstr(sgR%id))
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_placeAdjacentLR(cstr(g%id), cstr(sgL%id),      &
-            cstr(sgR%id))
-    end subroutine
+    !subroutine grid_placeAdjacentRL(g, sgR, sgL)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sgR
+    !    type(Subgrid), intent(in) :: sgL
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_placeAdjacentRL(cstr(g%id), cstr(sgR%id),      &
+    !        cstr(sgL%id))
+    !end subroutine
 
-    subroutine grid_placeAdjacentRL(g, sgR, sgL)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sgR
-        type(Subgrid), intent(in) :: sgL
+    !subroutine grid_placeAdjacentTB(g, sgT, sgB)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sgT
+    !    type(Subgrid), intent(in) :: sgB
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_placeAdjacentTB(cstr(g%id), cstr(sgT%id),      &
+    !        cstr(sgB%id))
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_placeAdjacentRL(cstr(g%id), cstr(sgR%id),      &
-            cstr(sgL%id))
-    end subroutine
+    !subroutine grid_placeAdjacentBT(g, sgB, sgT)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sgB
+    !    type(Subgrid), intent(in) :: sgT
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_placeAdjacentBT(cstr(g%id), cstr(sgB%id),      &
+    !        cstr(sgT%id))
+    !end subroutine
 
-    subroutine grid_placeAdjacentTB(g, sgT, sgB)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sgT
-        type(Subgrid), intent(in) :: sgB
+    !subroutine grid_connectTtoB(g, sg1, sg2)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg1
+    !    type(Subgrid), intent(in) :: sg2
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_connectTtoB(cstr(g%id), cstr(sg1%id),      &
+    !        cstr(sg2%id))
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_placeAdjacentTB(cstr(g%id), cstr(sgT%id),      &
-            cstr(sgB%id))
-    end subroutine
+    !subroutine grid_connectRtoL(g, sg1, sg2)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg1
+    !    type(Subgrid), intent(in) :: sg2
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_connectRtoL(cstr(g%id), cstr(sg1%id),      &
+    !        cstr(sg2%id))
+    !end subroutine
 
-    subroutine grid_placeAdjacentBT(g, sgB, sgT)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sgB
-        type(Subgrid), intent(in) :: sgT
+    !subroutine grid_connectBtoT(g, sg1, sg2)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg1
+    !    type(Subgrid), intent(in) :: sg2
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_connectBtoT(cstr(g%id), cstr(sg1%id),      &
+    !        cstr(sg2%id))
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_placeAdjacentBT(cstr(g%id), cstr(sgB%id),      &
-            cstr(sgT%id))
-    end subroutine
+    !subroutine grid_connectLtoR(g, sg1, sg2)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg1
+    !    type(Subgrid), intent(in) :: sg2
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_connectLtoR(cstr(g%id), cstr(sg1%id),      &
+    !        cstr(sg2%id))
+    !end subroutine
 
-    subroutine grid_connectTtoB(g, sg1, sg2)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg1
-        type(Subgrid), intent(in) :: sg2
+    !subroutine grid_connectLtoT(g, sg,  sgBL)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !    type(Subgrid), intent(in) :: sgBL
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_connectLtoT(cstr(g%id), cstr(sg%id),      &
+    !        cstr(sgBL%id))
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_connectTtoB(cstr(g%id), cstr(sg1%id),      &
-            cstr(sg2%id))
-    end subroutine
+    !subroutine grid_connectLtoB(g, sg,  sgTL)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !    type(Subgrid), intent(in) :: sgTL
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_connectLtoB(cstr(g%id), cstr(sg%id),      &
+    !        cstr(sgTL%id))
+    !end subroutine
 
-    subroutine grid_connectRtoL(g, sg1, sg2)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg1
-        type(Subgrid), intent(in) :: sg2
+    !subroutine grid_connectRtoT(g, sg,  sgBR)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !    type(Subgrid), intent(in) :: sgBR
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_connectRtoT(cstr(g%id), cstr(sg%id),      &
+    !        cstr(sgBR%id))
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_connectRtoL(cstr(g%id), cstr(sg1%id),      &
-            cstr(sg2%id))
-    end subroutine
+    !subroutine grid_connectRtoB(g, sg,  sgTR)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !    type(Subgrid), intent(in) :: sgTR
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_connectRtoB(cstr(g%id), cstr(sg%id),      &
+    !        cstr(sgTR%id))
+    !end subroutine
 
-    subroutine grid_connectBtoT(g, sg1, sg2)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg1
-        type(Subgrid), intent(in) :: sg2
+    !subroutine grid_connectTtoL(g, sg,  sgTR)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !    type(Subgrid), intent(in) :: sgTR
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_connectTtoL(cstr(g%id), cstr(sg%id),      &
+    !        cstr(sgTR%id))
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_connectBtoT(cstr(g%id), cstr(sg1%id),      &
-            cstr(sg2%id))
-    end subroutine
+    !subroutine grid_connectTtoR(g, sg,  sgTL)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !    type(Subgrid), intent(in) :: sgTL
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_connectTtoR(cstr(g%id), cstr(sg%id),      &
+    !        cstr(sgTL%id))
+    !end subroutine
 
-    subroutine grid_connectLtoR(g, sg1, sg2)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg1
-        type(Subgrid), intent(in) :: sg2
+    !subroutine grid_connectBtoL(g, sg,  sgBR)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !    type(Subgrid), intent(in) :: sgBR
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_connectBtoL(cstr(g%id), cstr(sg%id),      &
+    !        cstr(sgBR%id))
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_connectLtoR(cstr(g%id), cstr(sg1%id),      &
-            cstr(sg2%id))
-    end subroutine
+    !subroutine grid_connectBtoR(g, sg,  sgBL)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !    type(Subgrid), intent(in) :: sgBL
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_connectBtoR(cstr(g%id), cstr(sg%id),      &
+    !        cstr(sgBL%id))
+    !end subroutine
 
-    subroutine grid_connectLtoT(g, sg,  sgBL)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-        type(Subgrid), intent(in) :: sgBL
+    !subroutine grid_wrapLR(g, sg)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_wrapLR(cstr(g%id), cstr(sg%id))
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_connectLtoT(cstr(g%id), cstr(sg%id),      &
-            cstr(sgBL%id))
-    end subroutine
+    !subroutine grid_wrapTB(g, sg)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_wrapTB(cstr(g%id), cstr(sg%id))
+    !end subroutine
 
-    subroutine grid_connectLtoB(g, sg,  sgTL)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-        type(Subgrid), intent(in) :: sgTL
+    !subroutine grid_placeAdjacentWithOffsetLR(g, sgL, sgR, shiftUp)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sgL
+    !    type(Subgrid), intent(in) :: sgR
+    !    integer, intent(in)       :: shiftUp
+    !
+    !    ! Have master rank execute the command
+    !    if(myRank() == 0) then
+    !        call cwrap__grid_placeAdjacentWithOffsetLR(cstr(g%id),  &
+    !           cstr(sgL%id), cstr(sgR%id), cint(shiftUp))
+    !    end if
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_connectLtoB(cstr(g%id), cstr(sg%id),      &
-            cstr(sgTL%id))
-    end subroutine
+    !subroutine grid_placeAdjacentWithOffsetRL(g, sgR, sgL, shiftUp)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sgR
+    !    type(Subgrid), intent(in) :: sgL
+    !    integer, intent(in)       :: shiftUp
+    !
+    !    ! Have master rank execute the command
+    !    if(myRank() == 0) then
+    !        call cwrap__grid_placeAdjacentWithOffsetRL(cstr(g%id),  &
+    !            cstr(sgR%id), cstr(sgL%id), cint(shiftUp))
+    !    end if
+    !end subroutine
 
-    subroutine grid_connectRtoT(g, sg,  sgBR)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-        type(Subgrid), intent(in) :: sgBR
+    !subroutine grid_placeAdjacentWithOffsetTB(g, sgT, sgB, shiftRight)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sgT
+    !    type(Subgrid), intent(in) :: sgB
+    !    integer, intent(in)       :: shiftRight
+    !
+    !    ! Have master rank execute the command
+    !    if(myRank() == 0) then
+    !        call cwrap__grid_placeAdjacentWithOffsetTB(cstr(g%id),  &
+    !            cstr(sgT%id), cstr(sgB%id), cint(shiftRight))
+    !    end if
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_connectRtoT(cstr(g%id), cstr(sg%id),      &
-            cstr(sgBR%id))
-    end subroutine
+    !subroutine grid_placeAdjacentWithOffsetBT(g, sgB, sgT, shiftRight)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sgB
+    !    type(Subgrid), intent(in) :: sgT
+    !    integer, intent(in)       :: shiftRight
+    !
+    !    ! Have master rank execute the command
+    !    if(myRank() == 0) then
+    !        call cwrap__grid_placeAdjacentWithOffsetBT(cstr(g%id),  &
+    !            cstr(sgB%id), cstr(sgT%id), cint(shiftRight))
+    !    end if
+    !end subroutine
 
-    subroutine grid_connectRtoB(g, sg,  sgTR)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-        type(Subgrid), intent(in) :: sgTR
+    !subroutine grid_mirrorT(g, sg)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_mirrorT(cstr(g%id), cstr(sg%id))
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_connectRtoB(cstr(g%id), cstr(sg%id),      &
-            cstr(sgTR%id))
-    end subroutine
+    !subroutine grid_mirrorB(g, sg)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_mirrorB(cstr(g%id), cstr(sg%id))
+    !end subroutine
 
-    subroutine grid_connectTtoL(g, sg,  sgTR)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-        type(Subgrid), intent(in) :: sgTR
+    !subroutine grid_mirrorL(g, sg)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_mirrorL(cstr(g%id), cstr(sg%id))
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_connectTtoL(cstr(g%id), cstr(sg%id),      &
-            cstr(sgTR%id))
-    end subroutine
+    !subroutine grid_mirrorR(g, sg)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_mirrorR(cstr(g%id), cstr(sg%id))
+    !end subroutine
 
-    subroutine grid_connectTtoR(g, sg,  sgTL)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-        type(Subgrid), intent(in) :: sgTL
+    !subroutine grid_foldT(g, sg)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_foldT(cstr(g%id), cstr(sg%id))
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_connectTtoR(cstr(g%id), cstr(sg%id),      &
-            cstr(sgTL%id))
-    end subroutine
+    !subroutine grid_foldB(g, sg)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_foldB(cstr(g%id), cstr(sg%id))
+    !end subroutine
 
-    subroutine grid_connectBtoL(g, sg,  sgBR)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-        type(Subgrid), intent(in) :: sgBR
+    !subroutine grid_foldL(g, sg)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_foldL(cstr(g%id), cstr(sg%id))
+    !end subroutine
 
-        ! Have all ranks execute the command
-        call cwrap__grid_connectBtoL(cstr(g%id), cstr(sg%id),      &
-            cstr(sgBR%id))
-    end subroutine
-
-    subroutine grid_connectBtoR(g, sg,  sgBL)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-        type(Subgrid), intent(in) :: sgBL
-
-        ! Have all ranks execute the command
-        call cwrap__grid_connectBtoR(cstr(g%id), cstr(sg%id),      &
-            cstr(sgBL%id))
-    end subroutine
-
-    subroutine grid_wrapLR(g, sg)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-    
-        ! Have all ranks execute the command
-        call cwrap__grid_wrapLR(cstr(g%id), cstr(sg%id))
-    end subroutine
-
-    subroutine grid_wrapTB(g, sg)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-
-        ! Have all ranks execute the command
-        call cwrap__grid_wrapTB(cstr(g%id), cstr(sg%id))
-    end subroutine
-
-    subroutine grid_mirrorT(g, sg)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-
-        ! Have all ranks execute the command
-        call cwrap__grid_mirrorT(cstr(g%id), cstr(sg%id))
-    end subroutine
-
-    subroutine grid_mirrorB(g, sg)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-
-        ! Have all ranks execute the command
-        call cwrap__grid_mirrorB(cstr(g%id), cstr(sg%id))
-    end subroutine
-
-    subroutine grid_mirrorL(g, sg)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-
-        ! Have all ranks execute the command
-        call cwrap__grid_mirrorL(cstr(g%id), cstr(sg%id))
-    end subroutine
-
-    subroutine grid_mirrorR(g, sg)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-
-        ! Have all ranks execute the command
-        call cwrap__grid_mirrorR(cstr(g%id), cstr(sg%id))
-    end subroutine
-
-    subroutine grid_foldT(g, sg)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-
-        ! Have all ranks execute the command
-        call cwrap__grid_foldT(cstr(g%id), cstr(sg%id))
-    end subroutine
-
-    subroutine grid_foldB(g, sg)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-
-        ! Have all ranks execute the command
-        call cwrap__grid_foldB(cstr(g%id), cstr(sg%id))
-    end subroutine
-
-    subroutine grid_foldL(g, sg)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-
-        ! Have all ranks execute the command
-        call cwrap__grid_foldL(cstr(g%id), cstr(sg%id))
-    end subroutine
-
-    subroutine grid_foldR(g, sg)
-        type(Grid), intent(in)    :: g
-        type(Subgrid), intent(in) :: sg
-
-        ! Have all ranks execute the command
-        call cwrap__grid_foldR(cstr(g%id), cstr(sg%id))
-    end subroutine
+    !subroutine grid_foldR(g, sg)
+    !    type(Grid), intent(in)    :: g
+    !    type(Subgrid), intent(in) :: sg
+    !
+    !    ! Have all ranks execute the command
+    !    call cwrap__grid_foldR(cstr(g%id), cstr(sg%id))
+    !end subroutine
 
     integer function grid_numSubgrids(g)
         type(Grid), intent(in) :: g
@@ -864,6 +1052,9 @@ module mod_gridweaver
         call cwrap__grid_getSubgrid(cstr(g%id), idx, subgridName)
         call string_init_from_cstr(grid_getSubgrid%id, subgridName)
     end function
+
+
+
 
     function distribution_new(dist)
         character(len=*), intent(in) :: dist
@@ -918,6 +1109,53 @@ module mod_gridweaver
             cint(nProcs), cint(blkW), cint(blkH))
     end subroutine
 
+    subroutine distribution_applyBlankDist( &
+        dist, g, blkW, blkH)
+      !`
+        type(Distribution), intent(in) :: dist
+        type(Grid), intent(in)         :: g
+        integer, intent(in)            :: blkW, blkH
+        integer                        :: nProcs
+        
+        ! Have all ranks execute the command
+        nProcs = numRanks()
+        call cwrap__distribution_applyBlankDist( &
+            cstr(dist%id), cstr(g%id),             &
+            cint(nProcs), cint(blkW), cint(blkH))
+    end subroutine
+
+    subroutine distribution_setProcForBlock(dist, gbid, rank)
+        type(Distribution), intent(in) :: dist
+        integer, intent(in)            :: gbid, rank
+
+        ! Have all ranks execute the command
+        call cwrap__distribution_setProcForBlock(cstr(dist%id), gbid, rank)
+    end subroutine
+
+    integer function distribution_gbidAt(dist, sg, x, y)
+        type(Distribution), intent(in) :: dist
+        type(Subgrid), intent(in) :: sg
+        integer, intent(in)       :: x, y
+        integer(c_int) :: ret
+
+        ! Have all ranks execute the command
+        call cwrap__distribution_gbidAt(cstr(dist%id), cstr(sg%id), x, y, ret)
+        distribution_gbidAt = ret
+    end function
+
+    integer function distribution_gbidAtSGID(dist, sgid, x, y)
+        type(Distribution), intent(in) :: dist
+        integer, intent(in)       :: sgid
+        integer, intent(in)       :: x, y
+        integer(c_int) :: ret
+
+        ! Have all ranks execute the command
+        call cwrap__distribution_gbidAtSGID(cstr(dist%id), sgid, x, y, ret)
+        distribution_gbidAtSGID = ret
+    end function
+
+
+
     subroutine distribution_visualize(dist, dirName)
         type(Distribution), intent(in) :: dist
         character(len=*), intent(in)   :: dirname
@@ -933,7 +1171,7 @@ module mod_gridweaver
         type(Distribution), intent(in) :: dist
         integer(c_int) :: ret
 
-        ! Have master rank execute the command
+        ! Have every rank execute the command
         call cwrap__distribution_width(cstr(dist%id), ret)
         distribution_width = ret
     end function
@@ -942,7 +1180,7 @@ module mod_gridweaver
         type(Distribution), intent(in) :: dist
         integer(c_int) :: ret
 
-        ! Have master rank execute the command
+        ! Have every rank execute the command
         call cwrap__distribution_height(cstr(dist%id), ret)
         distribution_height = ret
     end function
@@ -951,9 +1189,28 @@ module mod_gridweaver
         type(Distribution), intent(in) :: dist
         integer(c_int) :: ret
 
-        ! Have master rank execute the command
+        ! Have every rank execute the command
         call cwrap__distribution_numLocalBlocks(cstr(dist%id), ret)
         distribution_numLocalBlocks = ret
+    end function
+
+    integer function distribution_numBlocks(dist)
+        type(Distribution), intent(in) :: dist
+        integer(c_int) :: ret
+
+        ! Have every rank execute the command
+        call cwrap__distribution_numBlocks(cstr(dist%id), ret)
+        distribution_numBlocks = ret
+    end function
+
+    integer function distribution_numNodesForProc(dist, pid);  
+        type(Distribution), intent(in) :: dist
+        integer, intent(in) :: pid
+        integer(c_int) :: ret
+
+        ! Have every rank execute the command
+        call cwrap__distribution_numNodesForProc(cstr(dist%id), cint(pid), ret)
+        distribution_numNodesForProc = ret
     end function
 
     integer function distribution_lbid2gbid(dist, lbid)
@@ -981,10 +1238,37 @@ module mod_gridweaver
         integer, intent(in) :: gbid
         integer(c_int) :: ret
 
-        ! Have master rank execute the command
         call cwrap__distribution_gbid2proc(cstr(dist%id), cint(gbid), ret)
         distribution_gbid2proc = ret
     end function
+
+    integer function distribution_gbid2sg(dist, gbid)
+        type(Distribution), intent(in) :: dist
+        integer, intent(in) :: gbid
+        integer(c_int) :: ret
+
+        call cwrap__distribution_gbid2sg(cstr(dist%id), cint(gbid), ret)
+        distribution_gbid2sg = ret
+    end function
+
+    integer function distribution_firstGbidInSG(dist, sg)
+        type(Distribution), intent(in) :: dist
+        type(Subgrid), intent(in) :: sg
+        integer(c_int) :: ret
+
+        call cwrap__distribution_firstGbidInSG(cstr(dist%id), cstr(sg%id), ret)
+        distribution_firstGbidInSG = ret
+    end function
+
+    integer function distribution_lastGbidInSG(dist, sg)
+        type(Distribution), intent(in) :: dist
+        type(Subgrid), intent(in) :: sg
+        integer(c_int) :: ret
+
+        call cwrap__distribution_lastGbidInSG(cstr(dist%id), cstr(sg%id), ret)
+        distribution_lastGbidInSG = ret
+    end function
+
 
     integer function distribution_blockLowX(dist, gbid)
         type(Distribution), intent(in) :: dist

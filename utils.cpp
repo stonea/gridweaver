@@ -87,17 +87,6 @@ string str(int i) {
     return ss.str();
 }
 
-/*void printNodeAndChildren(ostream &os, SgNode *node) {
-    os << indt;
-    os << node->class_name() << ": " << node->unparseToString();
-    for(int i = 0; i < node->get_numberOfTraversalSuccessors(); i++) {
-        SgNode *child = node->get_traversalSuccessorByIndex(i);
-        os << pushIndt;
-        printNodeAndChildren(os, child);
-        os << popIndt;
-    }
-}*/
-
 ostream &indt(ostream &os) {
     os << '\n';
     os.flush();

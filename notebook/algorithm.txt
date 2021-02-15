@@ -1,0 +1,318 @@
+Enabling GridWeaver to handle non-compact stencils
+---------------------------------------------------
+
+When we specify a stencil in GridWeaver we are given a location (i,j) and access
+neighboring values through a function that is passed one of these surrounding
+locations and returns the corresponding element.  For a stencil of depth d these
+locations are fall within the domain:
+
+    {(x,y) | i - d <= x <= i + d,  j - d <= y <= j + d}
+
+For compact stencils d = 1, for noncompact stencils d > 1.  We show an example
+five-point stencil with the following code:
+
+- - -
+    program Test
+        include 'gridweaver.h'
+        implicit none
+        
+        integer      :: mpierr
+        
+        type(Neighbor)     :: n1, n2 ...
+        type(Subgrid)      :: sg1, sg2, sg3
+        type(Grid)         :: g
+        type(Distribution) :: dist
+        type(Schedule)     :: sched
+        type(Grid)         :: g
+        type(DataObj)      :: x
+
+        ! Initialize MPI and GridLib
+        call MPI_INIT(mpierr)
+        call gridweaver_initialize()
+        
+        ! Set up environment
+        n1 = neighbor_new("neigh1", 1, 1)
+          ...
+        
+        sg1 = subgrid_new("sg1", 3, 3)
+        sg2 = subgrid_new("sg2", 3, 3)
+        sg3 = subgrid_new("sg3", 6, 3)
+        
+        g = grid_new("g")
+        call grid_addSubgrid(g, sg1)
+        call grid_addSubgrid(g, sg2)
+        call grid_addSubgrid(g, sg3)
+        call grid_addBorder(g, 4, 1, 4, 3, sg1, 1, 1, 1, 3, sg2)
+        call grid_addBorder(g, 1, 4, 3, 4, sg1, 1, 1, 1, 3, sg3)
+        call grid_addBorder(g, 0, 1, 0, 3, sg3, 1, 3, 3, 3, sg1)
+        call grid_addBorder(g, 1, 4, 3, 4, sg2, 1, 1, 3, 1, sg3)
+        call grid_addBorder(g, 1, 0, 3, 0, sg3, 1, 3, 3, 3, sg2)
+        
+        dist = distribution_new("dist")
+        call distribution_applyBlockCyclic(dist, g, 5, 5)
+        
+        sched = schedule_new("sched")
+        call schedule_calculate(sched, g, dist)
+
+        x = data_new(sched)
+        call data_forceUpdate(x)
+        call data_apply_1(x, x, fivePt)
+        
+        ! Deinitialize libraries and stop execution
+        call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
+        call MPI_FINALIZE(mpierr)
+        
+      contains
+        real function fivePt(A, i , j)
+            integer, intent(in) :: i, j
+            interface
+                integer function A(x,y)
+                    integer, intent(in) :: x,y
+                end function
+            end interface
+         
+            fivePt = 0.2 * &
+                (A(i, j) + A(i-1, j) + A(i+1, j) + A(i, j-1) + A(i, j+1))
+        end function
+    end program Test
+
+- - - 
+
+We illustrate the grid specified by the code:
+
+                  1 2 3 4 5
+                 ,----------,    
+       .-------->|. . . . . | 3
+       | .------>|. .sg3. . | 2
+       | | .---->|. . . . . | 1
+       | | |     `----------'  
+       | | |      ^ ^ ^
+       | | |      | | |
+       v v v      v v v
+      ,-----,    ,-----,
+    3 |. . .|<-->|. . .| 3
+    2 |.sg1.|<-->|.sg2.| 2
+    1 |. . .|<-->|. . .| 1
+      `-----'    `-----'
+       1 2 3      1 2 3
+
+And the border mappings for this grid are as follows:
+
+    (4,1,  4,3,  1,         (0, 1, 0, 3,  2 
+     1,1,  1,3,  2)          3, 1, 3, 3,  1)
+
+    (1,4,  3,4,  1,         (0, 1, 0, 3,  3,
+     1,1,  1,3,  3)          1, 3, 3, 3,  1)
+
+    (1,4,  3,4,  2,         (1, 0, 3, 0,  3,
+     1,1,  3,1,  3)          1, 3, 3, 3,  2)
+
+
+In this code the data_apply_1 function is passed an output data object as the
+first parameter and an input data object as the second.  Functions data_apply_2
+through data_apply_9 (not used in this example) take additional data objects as
+input.  From the user's perspective the fivePt function is written as though it
+were operating on a point (i,j) in a completley regular grid with A as the input
+data array.
+
+Internally, the data_apply_1 function iterates over all locally owned points and
+calls the stencil function (in this case fivePt).  It passes this stencil
+function a special data-mapping function (In1 for the first input data
+parameter, In2 through In9 if additional input data objects are required).  This
+data mapping function is used to return an accessed value of a data-object.
+
+Psuedocode for data_apply_1(out, in1, stenc) function:
+
+    gIn1 = in1
+
+    for blk in localBlocks
+        gblk  = blk
+        gSg   = subgrid(blk)
+        gBlkX = blkX(blk)
+        gBlkY = blkX(blk)
+
+        for i,j in blk
+            gi = i
+            gj = j
+            stenc(In1, i, j)
+
+Psuedocode for In1(i, j) function:
+
+    return d(N(gBlkX + i,gBlkY + j, gSg, i, j))
+
+Where d returns the value of an element at a specified grid location and the
+neighboring function N(d, i,j,sg, x,y) map between the locations a stencil has
+access to when updating an element (sg, <i,j>) and what grid elements these
+locations correspond to.
+
+For example, assuming that each subgrid contains one block of data, the values
+of the neighbor function for location(1, <3,3>) would be:
+
+    N(1,  3,3,1,  2,2)  =  (1, <2, 2>)
+    N(1,  3,3,1,  3,2)  =  (1, <3, 2>)
+    N(1,  3,3,1,  4,2)  =  (1, <4, 2>)
+    N(1,  3,3,1,  2,3)  =  (1, <2, 3>)
+    N(1,  3,3,1,  3,3)  =  (1, <3, 3>)
+    N(1,  3,3,1,  4,3)  =  (1, <4, 3>)
+    N(1,  3,3,1,  2,4)  =  (1, <2, 4>)
+    N(1,  3,3,1,  3,4)  =  (1, <3, 4>)
+    N(1,  3,3,1,  4,4)  =  (1, <4, 4>)
+
+Assuming (bi, bj) is the grid-location of the lower-left corner of the block
+then if (sg, <bi+x, bj+y>) is a point in subgrid sg then:
+
+    N(i,j,sg,x,y,d) = (sg, <bi + x, bj + y>).
+
+If (sg, <bi+x, bj+y>) lies within a subgrid halo than the border-mapping
+function is used to determine the resulting location.
+
+However, this raises the question:  what should be returned if (sg, <bi+x,
+bj+y>) does not lie on the grid nor does it lie in the subgrid's halo.
+
+One potential solution would be to allow for larger border-mapping functions and
+thus larger subgrid halos.  For example consider expanding the border mapping
+functions in the example given so that they go d elements out:
+
+                  1 2 3 4 5
+                 ,----------,    
+       .-------->|. . . . . | 3
+       | .------>|. .sg3. . | 2
+       | | .---->|. . . . . | 1
+       | | |     `----------'  
+       | | |      ^ ^ ^
+       | | |      | | |
+       v v v      v v v
+      ,-----,    ,-----,
+    3 |. . .|<-->|. . .| 3
+    2 |.sg1.|<-->|.sg2.| 2
+    1 |. . .|<-->|. . .| 1
+      `-----'    `-----'
+       1 2 3      1 2 3
+
+    (4,1,  4+d,3,  1,         (-d, 1,    0, 3,  2 
+     1,1,    d,3,  2)           3, 1,  3-d, 3,  1)
+
+    (1,4,  3,4+d,  1,         (-d, 1,  0,3,   3,
+     1,1,  d,3,    3)           1, 3,  3,3-d, 1)
+ 
+    (1,4,  3,4+d,  2,         (1, -d,  3, 0,   3,
+     1,1,  3,d,    3)          1, 3,  3, 3+d,  2)
+
+
+The resulting halo of A would look like the following where subgrid C overlaps
+with itself in a misaligned manner:
+
+        ,------,----------,    
+    6   |. . . | . . . . .|
+    5   |. .sg3| . .sg3. .|
+    4   |. . . | . . . . .|
+        `------`----------'
+        ,-----,,-----,
+    3   |. . .||. . .|
+    2   |.sg1.||.sg2.|
+    1   |. . .||. . .|
+        `-----'`-----'
+
+         1 2 3  4 5 6 7 8
+
+Thus this approach will not work.
+
+
+However, overlap issues only emerge for blocks that fall along the border of a
+subgrid.  Here we picture subgrid 1 split into 9 blocks.  Blocks 10, 11, 12, and
+13 are stored on different subgrids and are reachable from block 3.
+
+                  ____      ____
+                 |    |    |    |
+                 | 10 |    | 11 |
+                 `____' .--`----'
+                   .   .    ____
+    ,-----------------,    |    |
+    |     |     |     |    | 12 |
+    |  1  |  2  |  3  |....`____'
+    |     |     |     |    |    |
+    |-----------------|    | 13 |
+    |     |     |     |    `____'
+    |  4  |  5  |  6  |
+    |     |     |     |
+    |-----------------|
+    |     |     |     |
+    |  7  |  8  |  9  |
+    |     |     |     |
+    `-----------------'
+
+In the pictured subgrid block 5 is considered an internal block and blocks
+1,2,3,4,6,7,8, and 9 are considered border blocks.
+
+For an internal block we simply expand the block's array to include a depth-d
+halo and populate it using values from the surrounding blocks.
+
+For bordering blocks we expand the halo in the direction towards internal blocks
+and use the old algorithm for these portions of the halo.  For example, block 3
+will have a halo that overlaps with blocks 2, 5, and 6.
+
+To communicate values outside of this halo a special data-structure is used.
+This data-structure is an array nonCompactHalo(blkId, x, y) that stores relevant
+portions of surrounding blocks where blkID is specific.
+
+The algorithm for updating block 3 will first iterate through all points that
+can be updated without accessing nonCompactHalo.  Then all points that do access
+these points will be updated, for these points an equation is used to map the 2D
+index offset from (i,j) into the apporpriate location in nonCompactHalo.
+
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+Since the edges that lead into sg3 curve rotate and reposition subgrid 3:
+
+             
+      ,-----,
+      |. . .|
+      |. 3 .|
+      |. g .|,----------,
+      |. s .||. . . . . |
+      |. . .||. .sg3. . |
+      |. . .||. . . . . |
+      `-----'`----------'  
+      ,-----,,-----,
+      |. . .||. . .|
+      |.sg1.||.sg2.|
+      |. . .||. . .|
+      `-----'`-----'
+
+
+        O--O
+        |  |
+        *--O
+
+
+--------------------------------------------------------------------------------
+
+Another possible solution:
+    Instead of having expressions like this:
+    
+        SE(i-1,j+2) * A(i, j+2)
+    
+    Have expressions like this:
+    
+        SE(southWest(north())) * A(southWest(north()))
+    
+    The compiler can inline the expression for an internal block and calculate
+    the correct location to access in nonCompactHalo when updating a bordering
+    block.
+
+--------------------------------------------------------------------------------
+
+dual representation:
+    - i,j coordinates (used when internal to subgrid)
+    - path representation (used when crossing between subgrids)
+
+
+dual representation:
+    - i,j coordinates (used when internal to subgrid)
+    - path representation (used when crossing between subgrids)
+
+--------------------------------------------------------------------------------
+

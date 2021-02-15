@@ -1,0 +1,180 @@
+
+! =================================================================================== 
+! <<Automatically generated for Rose Fortran Separate Compilation, DO NOT MODIFY IT>> 
+! =================================================================================== 
+
+MODULE Expressions
+USE Environment, 
+INTEGER :: IF = -1,AND = -2,EQ = -3,IDX = -4,CONST = -5,PARAM = -6,MINUS = -7,PLUS = -8
+!    type, public :: exp
+!        integer :: command
+!        type(exp), pointer :: left, &
+!                              right
+!    end type
+!
+!    type(exp), target :: nodePool(10000)
+!    integer :: nAllocatedNodes = 0
+!
+!    public :: if_, and_, eq_, var_, const_
+!    public :: printExp
+!    public :: applyExp
+!
+!contains
+!! *****************************************************************************
+!    function val_(val)
+!        type(exp), pointer :: val_
+!        integer, intent(in) :: val
+!
+!        nodePool(nAllocatedNodes)%command = val
+!        nullify(nodePool(nAllocatedNodes)%left)
+!        nullify(nodePool(nAllocatedNodes)%right)
+!        
+!        nAllocatedNodes = nAllocatedNodes + 1
+!
+!        val_ => nodePool(nAllocatedNodes-1)
+!    end function
+!
+!    function if_(left)
+!        type(exp) :: if_
+!        type(exp), target, intent(in) :: left
+!        
+!        if_%command = IF
+!        if_%left  => left
+!        nullify(if_%right)
+!    end function
+!
+!    function and_(left, right)
+!        type(exp) :: and_
+!        type(exp), target, intent(in) :: left, right
+!        
+!        and_%command = AND
+!        and_%left  => left
+!        and_%right => right
+!    end function
+!
+!    function eq_(left, right)
+!        type(exp) :: eq_
+!        type(exp), target, intent(in) :: left, right
+!        
+!        eq_%command = EQ
+!        eq_%left  => left
+!        eq_%right => right
+!    end function
+!
+!    function idx_(idx_val)
+!        type(exp) :: idx_
+!        integer, intent(in) :: idx_val
+!                
+!        idx_%command = IDX
+!        idx_%left => val_(idx_val)
+!        nullify(idx_%right)
+!    end function
+!
+!    function const_(const_val)
+!        type(exp) :: const_
+!        integer, intent(in) :: const_val
+!
+!        const_%command = CONST
+!        const_%left => val_(const_val)
+!        nullify(const_%right)
+!    end function
+!
+!    function param_(param_val)
+!        type(exp) :: param_
+!        integer, intent(in) :: param_val
+!
+!        param_%command = PARAM
+!        param_%left => val_(param_val)
+!        nullify(param_%right)
+!    end function
+!
+!    function minus_(left, right)
+!        type(exp) :: minus_
+!        type(exp), target, intent(in) :: left, right
+!        
+!        minus_%command = MINUS
+!        minus_%left  => left
+!        minus_%right => right
+!    end function
+!
+!    function plus_(left, right)
+!        type(exp) :: plus_
+!        type(exp), target, intent(in) :: left, right
+!        
+!        plus_%command = PLUS
+!        plus_%left  => left
+!        plus_%right => right
+!    end function
+!
+!
+!    recursive subroutine printExp(e)
+!        type(exp) :: e
+!
+!        select case(e%command)
+!            case (IF)     ; write(*, '(A)', advance='no') "IF("
+!            case (AND)    ; write(*, '(A)', advance='no') "AND("
+!            case (EQ)     ; write(*, '(A)', advance='no') "EQ("
+!            case (IDX)    ; write(*, '(A)', advance='no') "IDX("
+!            case (CONST)  ; write(*, '(A)', advance='no') "CONST("
+!            case (PARAM)  ; write(*, '(A)', advance='no') "PARAM("
+!            case (MINUS)  ; write(*, '(A)', advance='no') "MINUS("
+!            case (PLUS)   ; write(*, '(A)', advance='no') "PLUS("
+!
+!            case default
+!                write(*, '(I1)', advance='no') e%command
+!        end select
+!        
+!        if(associated(e%left))  call printExp(e%left)
+!        if(associated(e%right)) then
+!            write(*, '(A)', advance='no') ", "
+!            call printExp(e%right)
+!        end if
+!        if(e%command .lt. 0) &
+!            write(*, '(A)', advance='no') ")"
+!    end subroutine
+!
+!    recursive function applyExp(e, env) result(res)
+!        integer :: res
+!        type(exp) :: e
+!        type(environmentT) :: env
+!
+!        select case(e%command)
+!            case (IF)
+!                res = applyExp(e%left, env)
+!                
+!            case (AND)
+!                if(applyExp(e%left, env) == 1 .and. &
+!                   applyExp(e%right, env) == 1) then
+!                    res = 1
+!                else
+!                    res = 0
+!                end if
+!
+!            case (EQ)
+!                if(applyExp(e%left, env) == applyExp(e%right, env)) then
+!                    res = 1
+!                else
+!                    res = 0
+!                end if
+!
+!            case (IDX)
+!                res = env%indices(e%left%command)
+!
+!            case (CONST)
+!                res = e%left%command
+!
+!            case (PARAM)
+!                res = env%bounds(e%left%command)
+!
+!            case (MINUS)
+!                res = applyExp(e%left, env) - applyExp(e%right, env)
+!
+!            case (PLUS)
+!                res = applyExp(e%left, env) + applyExp(e%right, env)
+!
+!            case default
+!                print *, "Unrecognized command type for expression"
+!        end select
+!    end function
+
+END MODULE Expressions

@@ -686,6 +686,25 @@ void initializeModule_utils();
     }
 
     /**
+     * Allow STL vectors to be printed to ostream objects.
+     */
+    template <typename T>
+    std::ostream &operator<<(std::ostream &out, const std::vector<T> &val)
+    {
+        out << hiFmt("[");
+        for(typename std::vector<T>::const_iterator i = val.begin();
+            i != val.end(); i++)
+        {
+            if(i != val.begin()) { out << hiFmt(", "); }
+            out << *i;
+        }
+        out << hiFmt("]");
+        return out;
+    }
+
+
+
+    /**
      * Allow STL sets to be printed to ostream objects.
      */
     template <typename T>

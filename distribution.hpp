@@ -69,10 +69,15 @@ class Distribution : public IPrintable,
                               int blockW, int blockH);
 
         /**
-         * Calculate a blocked horizontal distribution for grid g. Assume that
-         * there are nProcs processors.
+         * Create a blank distribution (everything defaults to rank 0)
+         * of blocks of a given width and height.
          */
-        //void applyBlockHoriz(Grid *g, int nProcs);
+        void applyBlankDist(Grid *g, int nProcs, int blockW, int blockH);
+
+        /**
+         * Assign a processor to a given gbid.
+         */
+        void setProcForBlock(int gbid, int rank);
     ///@}
 
     // =======================
@@ -125,11 +130,26 @@ class Distribution : public IPrintable,
         int numLclBlocksForProc(int pid) const { return mProc2nLbid[pid]; }
 
         /**
+         * Return the total number of blocks in the distribution.
+         */
+        int numBlocks() const;
+
+        /**
+         * Return the total number of nodes a processor claims ownership over
+         */
+        int numNodesForProc(int pid) const;
+
+        /**
          * Given a global block ID return the MPI rank of the processor
          * that owns that block.
          */
         int gbidProc(int gbid) const { return mGbid2proc[gbid-1]; }
-        
+
+        /**
+         * Given a global block ID return the subgrid that owns it.
+         */
+        int gbid2SG(int gbid) const;
+ 
         /**
          * Given a global block ID return its corresponding local block ID.
          */
@@ -148,6 +168,16 @@ class Distribution : public IPrintable,
     // =======================
     /** @name Queries */
     ///@{
+        /**
+         * Return true if block gbid lies along the border of a subgrid.
+         */
+        bool isBorderBlock(int gbid) const;
+
+        /**
+         * Return true if block gbid is interior in a subgrid.
+         */
+        bool isInteriorBlock(int gbid) const;
+
         /**
          * Return the subgrid the specified block is in.
          */
@@ -221,6 +251,8 @@ class Distribution : public IPrintable,
      **/
     int applyFillBlockToSG(Subgrid *sg, int startingGBID);
 
+    int applyBlockFillToSG(Subgrid *sg, int startingGBID);
+
     /**
      * Apply a block cyclic distribution to the specified subgrid starting
      * with the specfied starting block global ID.  Return the global ID
@@ -246,6 +278,9 @@ class Distribution : public IPrintable,
     /** Load an entry of mLbid2gbid from the stream. */
     static void loadLbid2gbidEntry(std::istream &in,
                                    std::vector<int> &obj);
+
+    /** Replicate the data so that it is available on every MPI rank. */
+    //void globallyReplicate();
 
 
     std::string mName;

@@ -84,8 +84,11 @@ void Project::replaceApply(Call__data_apply *call) {
     startLoops(call, ss);
     ss << indt
        << call->funcDef()->unparseToString();
+    //printNodeAndChildren(cout, call->funcDef()->get_traversalSuccessorByIndex(0));
     endLoops(call, ss);
 
+    //data_apply%vals(x, y, lbid) = func(neighs)
+    
     // Remove old code
     replaceCall(call->location(), ss.str());
 }

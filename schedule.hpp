@@ -40,7 +40,9 @@ class Schedule : public IPrintable, public ISerializable, public IEnvironmental
          * grid g using distribution dist.  Store the resulting schedule in
          * this object.
          */
-        void calculate(Grid *g, Distribution *dist);
+        void calculate(Grid *g, Distribution *dist, int depth);
+
+        void calculateGhostNodePlan(Grid *g, Distribution *dist, int depth);
     ///@}
 
     // =======================
@@ -70,7 +72,7 @@ class Schedule : public IPrintable, public ISerializable, public IEnvironmental
          * Return the distribution this schedule is applied to. 
          */
         Distribution* distribution() const { return mDist; }
-    //@}
+   //@}
 
     // ==========================
     // - [Transfer to Fortran] -
@@ -126,6 +128,32 @@ class Schedule : public IPrintable, public ISerializable, public IEnvironmental
         int *transferRegionSendHighY,
         int *transferSendOrientation);
 
+    void transferGhostSizesToFortran(
+        int &size_ghostMsgRecvFrom,
+        int &size_recvGhostMsgStart,
+        int &size_recvGhostMsgSG,
+        int &size_recvGhostMsgX,
+        int &size_recvGhostMsgY,
+        int &size_ghostMsgSendTo,
+        int &size_sendGhostMsgStart,
+        int &size_sendGhostMsgSG,
+        int &size_sendGhostMsgX,
+        int &size_sendGhostMsgY);
+
+    void transferGhostsToFortran(
+        int &nGhostMsgsRecv,
+        int *ghostMsgRecvFrom,
+        int *recvGhostMsgStart,
+        int *recvGhostMsgSG,
+        int *recvGhostMsgX,
+        int *recvGhostMsgY,
+        int &nGhostMsgsSend,
+        int *ghostMsgSendTo,
+        int *sendGhostMsgStart,
+        int *sendGhostMsgSG,
+        int *sendGhostMsgX,
+        int *sendGhostMsgY);
+
   private:
     // =======================
     // - [Construction] -
@@ -138,6 +166,13 @@ class Schedule : public IPrintable, public ISerializable, public IEnvironmental
          */
         void registerTransfer(int srcGbid, const Region &srcReg,
                               int tgtGbid, const Region &tgtReg);
+
+        /**
+         * Return set of global coordinates reachable from gbid within d steps
+         * of a breadth-first search.  Do not expand into the block.
+         */
+        std::set<GlobalCoordinate> breadthFirstExpansionFromBlock(
+            int gbid, int d) const;
 
     // =======================
     // - [Input and Output] -
@@ -184,7 +219,6 @@ class Schedule : public IPrintable, public ISerializable, public IEnvironmental
         static void saveRegionVectorVector(
             std::ostream &out, const std::vector<std::vector<Region> > &obj);
 
-
     std::string mName;
     Grid  *mGrid;
     Distribution  *mDist;
@@ -198,6 +232,17 @@ class Schedule : public IPrintable, public ISerializable, public IEnvironmental
     std::vector<int>  mMsgSendTo;
     std::vector<std::vector<int> >  mTransferSendFromLBID;
     std::vector<std::vector<Region> >  mTransferRegionSend;
+
+
+    int  mnGhostMsgsRecv;
+    std::vector<int>  mGhostMsgRecvFrom;
+    std::vector<std::vector<GlobalCoordinate> >  // msgID -> coordinates
+        mTransferGhostCoordsRecv; 
+
+    int  mnGhostMsgsSend;
+    std::vector<int>  mGhostMsgSendTo;
+    std::vector<std::vector<GlobalCoordinate> >  // msgID -> coordinates
+        mTransferGhostCoordsSend;
 };
 
 #endif

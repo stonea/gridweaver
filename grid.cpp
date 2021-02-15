@@ -14,6 +14,24 @@ using namespace std;
 void initializeModule_grid() {
 }
 
+
+int x, y;
+Subgrid *sg;
+
+void GlobalCoordinate::print(std::ostream &out) const {
+}
+
+void GlobalCoordinate::printSimp(std::ostream &out) const {
+    out << "(" << sg->getID() << ", <" << x << ", " << y << ">)";
+}
+
+bool GlobalCoordinate::operator<(const struct GlobalCoordinate& rhs) const {
+    return (sg->getID()  < rhs.sg->getID()) ||
+           (sg->getID() == rhs.sg->getID() && x < rhs.x) ||
+           (sg->getID() == rhs.sg->getID() && x == rhs.x && y < rhs.y);
+}
+
+
 Region::Region() :
     mLowX(0), mLowY(0), mHighX(0), mHighY(0),
     mOrientation(BL),
@@ -69,15 +87,15 @@ void Region::input(istream &in) {
 }
 
 int Region::keyX() const {
-         if(mOrientation == BL) { return mLowX; }
-    else if(mOrientation == BR) { return mLowX; }
-    else if(mOrientation == TL) { return mLowX; }
-    else if(mOrientation == TR) { return mLowX; }
+         if(mOrientation == BL) { return mLowX;  }
+    else if(mOrientation == BR) { return mHighX; }
+    else if(mOrientation == TL) { return mLowX;  }
+    else if(mOrientation == TR) { return mHighX; }
 }
 
 int Region::keyY() const {
-         if(mOrientation == BL) { return mLowY; }
-    else if(mOrientation == BR) { return mLowY; }
+         if(mOrientation == BL) { return mLowY;  }
+    else if(mOrientation == BR) { return mLowY;  }
     else if(mOrientation == TL) { return mHighY; }
     else if(mOrientation == TR) { return mHighY; }
 }
@@ -87,23 +105,282 @@ bool Region::contains(int x, int y) const {
     return(x >= lowX() && x <= highX() && y >= lowY() && y <= highY());
 }
 
+bool Region::isHorizFlipRelativeTo(const Region &rhs) const {
+    // If this region has a left to right orientation check if rhs
+    // has a right to left orientation
+    if(mOrientation == BL || mOrientation == TL) {
+        return(rhs.orientation() == BR || rhs.orientation() == TR);
+    }
+    // Otherwise this region has a right to left orientation so check if
+    // rhs has a left to right orientation
+    return(rhs.orientation() == BL || rhs.orientation() == TL);
+}
+
+bool Region::isVertFlipRelativeTo(const Region &rhs) const {
+    // If this region has a bottom to top orientation check if rhs
+    // has a top to bottom orientation
+    if(mOrientation == BL || mOrientation == BR) {
+        return(rhs.orientation() == TL || rhs.orientation() == TR);
+    }
+    // Otherwise this region has a top to bottom orientation so check if
+    // rhs has a bottom to top orientation
+    return(rhs.orientation() == BL || rhs.orientation() == BR);
+}
+
+bool Region::is90degFlip(const Region &rhs) const {
+    return ((highX() - lowX()) == (rhs.highY() - rhs.lowY()));
+}
+
+void Region::reorient(Region tgt, int &x, int &y, bool accountForSelf,
+                      bool flip) const
+{
+    int m11;  int m12; int m21;  int m22;
+    int n11;  int n12; int n21;  int n22;
+    int r11;  int r12; int r21;  int r22;
+
+    if(accountForSelf) {
+        switch(orientation()) {
+            case BL:
+                m11 =  1;    m12 =  0;
+                m21 =  0;    m22 =  1;
+                break;
+
+            case BR:
+                m11 = -1;    m12 =  0;
+                m21 =  0;    m22 =  1;
+                break;
+
+            case TL:
+                m11 =  1;    m12 =  0;
+                m21 =  0;    m22 = -1;
+                break;
+
+            case TR:
+                m11 = -1;    m12 =  0;
+                m21 =  0;    m22 = -1;
+                break;
+        }
+    } else {
+        m11 =  1;    m12 =  0;
+        m21 =  0;    m22 =  1;
+    }
+
+    switch(tgt.orientation()) {
+        case BL:
+            n11 =  1;    n12 =  0;
+            n21 =  0;    n22 =  1;
+            break;
+
+        case BR:
+            n11 = -1;    n12 =  0;
+            n21 =  0;    n22 =  1;
+            break;
+
+        case TL:
+            n11 =  1;    n12 =  0;
+            n21 =  0;    n22 = -1;
+            break;
+
+        case TR:
+            n11 = -1;    n12 =  0;
+            n21 =  0;    m22 = -1;
+            break;
+    }
+
+    if(flip) {
+        r11 = (m11 * n12) + (m12 * n22);    r12 = (m11 * n11) + (m12 * n21);
+        r21 = (m21 * n12) + (m22 * n22);    r22 = (m21 * n11) + (m22 * n21);
+    } else {
+        r11 = (m11 * n11) + (m12 * n21);    r12 = (m11 * n12) + (m12 * n22);
+        r21 = (m21 * n11) + (m22 * n21);    r22 = (m21 * n12) + (m22 * n22);
+    }
+
+    int oldX = x;
+    int oldY = y;
+
+    x = r11 * oldX + r12 * oldY;
+    y = r21 * oldX + r22 * oldY;
+}
+
+Region Region::intersect(const Region &rhs) const {
+    int x1, x2, y1, y2;
+    Region res;
+    
+    x1 = MAX(lowX(),  rhs.lowX());
+    y1 = MAX(lowY(),  rhs.lowY());
+    x2 = MIN(highX(), rhs.highX());
+    y2 = MIN(highY(), rhs.highY());
+
+    // If there's an overlap return the overlapping region otherwise return an
+    // empty rectangle
+    if(x1 <= x2 && y1 <= y2) {
+        res.reshape(x1, y1, x2, y2);
+    }
+
+    return res;
+}
+
+Region Region::analogousRegion(const Region &reg, const Region &tgt) const {
+    Region res;
+    int x1, y1, x2, y2;
+
+    // If the embedded region is empty or doesn't intersect with the source
+    // region return an empty region
+    if(isEmpty() || intersect(reg).isEmpty()) { return res; }
+
+    x1 = reg.mLowX  - mLowX;        x2 = reg.mHighX - mLowX;
+    y1 = reg.mLowY  - mLowY;        y2 = reg.mHighY - mLowY;
+
+    //cout << "x1/y1: " << x1 << " " << y1 << "\t"
+    //     << "x2/y2: " << x2 << " " << y2 << endl;
+
+    if(is90degFlip(tgt)) {
+        reorient(tgt, x1,y1, true, true);
+        reorient(tgt, x2,y2, true, true);
+    }
+    else {
+        reorient(tgt, x1,y1);
+        reorient(tgt, x2,y2);
+    }
+
+    //cout << "Reoriented: " << endl;
+    //cout << "x1/y1: " << x1 << " " << y1 << "\t"
+    //     << "x2/y2: " << x2 << " " << y2 << endl;
+
+    x1 += tgt.keyX();   x2 += tgt.keyX();
+    y1 += tgt.keyY();   y2 += tgt.keyY();
+
+//    reorient();
+
+    // Otherwise determine the analogy based on the targets orientation
+//    if(! tgt.isHorizFlipRelativeTo(reg)) {
+//        x1 = tgt.mLowX + (mLowX  - reg.mLowX);
+//        x2 = tgt.mLowX + (mHighX - reg.mLowX);
+//    } else {
+//        x1 = tgt.mHighX - (mLowX  - reg.mLowX);
+//        x2 = tgt.mHighX - (mHighX - reg.mLowX);
+//    }
+
+//    if(! tgt.isVertFlipRelativeTo(reg)) {
+//        y1 = tgt.mLowY + (mLowY  - reg.mLowY);
+//        y2 = tgt.mLowY + (mHighY - reg.mLowY);
+//    } else {
+//        y1 = tgt.mHighY - (mLowY  - reg.mLowY);
+//        y2 = tgt.mHighY - (mHighY - reg.mLowY);
+//    }
+
+    res.reshape(x1, y1, x2, y2);
+
+    return res;
+}
+
+void Region::cutAnalogously(const Region &rhs, const Region &tgt,
+                            Region &resInSrc, Region &resInTgt) const
+{
+    int x1, y1, x2, y2;
+
+    // If the embedded region is empty or doesn't intersect with the source
+    // region return an empty region
+    if(isEmpty() || rhs.isEmpty() || intersect(rhs).isEmpty()) {
+        resInSrc.clear();
+        resInTgt.clear();
+        return;
+    }
+
+    // Do the cut on the source side
+    resInSrc = intersect(rhs);
+
+    // Do cut on the target side
+    //x1 = (MAX(lowX(),  rhs.lowX())  - lowX());
+    //x2 = (MIN(highX(), rhs.highX()) - lowX());
+    //y1 = (MAX(lowY(),  rhs.lowY())  - lowY());
+    //y2 = (MIN(highY(), rhs.highY()) - lowY());
+
+    //x1 = resInSrc.lowX()  - keyX();
+    //y1 = resInSrc.lowY()  - keyY();
+    //x2 = resInSrc.highX() - keyX();
+    //y2 = resInSrc.highY() - keyY();
+
+    x1 = resInSrc.lowX()  - lowX();
+    y1 = resInSrc.lowY()  - lowY();
+    x2 = resInSrc.highX() - lowX();
+    y2 = resInSrc.highY() - lowY();
+
+    if(is90degFlip(tgt)) {
+        reorient(tgt, x1,y1, false, true);
+        reorient(tgt, x2,y2, false, true);
+    }
+    else {
+        reorient(tgt, x1,y1, false);
+        reorient(tgt, x2,y2, false);
+    }
+    x1 += tgt.keyX();   x2 += tgt.keyX();
+    y1 += tgt.keyY();   y2 += tgt.keyY();
+
+    resInTgt.reshape(x1, y1, x2, y2);
+
+    // Keep orientation of what you're cutting from
+    resInSrc.mOrientation = mOrientation;
+    resInTgt.mOrientation = tgt.mOrientation;
+
+    // Do the cut on the target side; determine the analogy based on the targets
+    // orientation
+    //if(! isHorizFlipRelativeTo(rhs)) {
+    //    x1 = tgt.mLowX + (MAX(lowX(),  rhs.lowX())  - lowX());
+    //    x2 = tgt.mLowX + (MIN(highX(), rhs.highX()) - lowX());
+    //} else {
+    //    x1 = tgt.mHighX - (MAX(lowX(),  rhs.lowX())  - lowX());
+    //    x2 = tgt.mHighX - (MIN(highX(), rhs.highX()) - lowX());
+    //}
+
+    //if(! isVertFlipRelativeTo(rhs)) {
+    //    y1 = tgt.mLowY + (MAX(lowY(),  rhs.lowY())  - lowY());
+    //    y2 = tgt.mLowY + (MIN(highY(), rhs.highY()) - lowY());
+    //} else {
+    //    y1 = tgt.mHighY - (MAX(lowY(),  rhs.lowY())  - lowY());
+    //    y2 = tgt.mHighY - (MIN(highY(), rhs.highY()) - lowY());
+    //}
+}
+
+void Region::flipHoriz() {
+    switch(mOrientation) {
+        case BL: mOrientation = BR; break;
+        case BR: mOrientation = BL; break;
+        case TL: mOrientation = TR; break;
+        case TR: mOrientation = TL; break;
+    }
+}
+
+void Region::flipVert() {
+    switch(mOrientation) {
+        case BL: mOrientation = TL; break;
+        case BR: mOrientation = TR; break;
+        case TL: mOrientation = BL; break;
+        case TR: mOrientation = BR; break;
+    }
+}
+
 void Region::reshape(int x1, int y1, int x2, int y2) {
-    // Infer orientation from order of indices
+    // Infer orientation from order of indices:
+
+    // Bottom to top orientations
     if(x1 <= x2 && y1 <= y2) {
         mOrientation = BL;
-        mLowX = x1; mLowY = y1; mHighX = x2; mHighY = y2;
+        mLowX = x1; mHighX = x2; mLowY = y1; mHighY = y2;
     }
     else if(x2 <= x1 && y1 <= y2) {
         mOrientation = BR;
-        mLowX = x2; mLowY = y1; mHighX = x1; mHighY = y2;
+        mLowX = x2; mHighX = x1; mLowY = y1; mHighY = y2;
     }
+
+    // Top to top orientations
     else if(x1 <= x2 && y2 <= y1) {
         mOrientation = TL;
-        mLowX = x1; mLowY = y2; mHighX = x2; mHighY = y1;
+        mLowX = x1; mHighX = x2; mLowY = y2; mHighY = y1;
     }
     else if(x2 <= x1 && y2 <= y1) {
-        mOrientation = BL;
-        mLowX = x2; mLowY = y2; mHighX = x1; mHighY = y1;
+        mOrientation = TR;
+        mLowX = x2; mHighX = x1; mLowY = y2; mHighY = y1;
     }
 
     mEmpty = false;
@@ -135,6 +412,10 @@ void Region::cut(const Region &rhs) {
     mLowY  = MAX(mLowY,  rhs.lowY());
     mHighX = MIN(mHighX, rhs.highX());
     mHighY = MIN(mHighY, rhs.highY());
+
+    // Flip if necessary
+    if(isHorizFlipRelativeTo(rhs)) { flipHoriz(); }
+    if(isVertFlipRelativeTo(rhs))  { flipVert(); }
 }
 
 void Region::translate(int deltaX, int deltaY) {
@@ -142,6 +423,15 @@ void Region::translate(int deltaX, int deltaY) {
     mLowY  += deltaY;
     mHighX += deltaX;
     mHighY += deltaY;
+}
+
+void Region::clear() {
+    mLowX = 0;
+    mLowY = 0;
+    mHighX = 0;
+    mHighY = 0;
+    mOrientation = BL;
+    mEmpty = true;
 }
 
 Neighbor::Neighbor(const string &name) :
@@ -171,10 +461,12 @@ void Neighbor::input(istream &in) {
 }
 
 
-Subgrid::Subgrid(const string &name) :
+Subgrid::Subgrid(const string &name, int sgid) :
     mName(name),
     mW(0),
-    mH(0) { }
+    mH(0),
+    mSGID(sgid)
+    { }
 
 void Subgrid::print(ostream &out) const {
     printObj_start(out, "Subgrid", mName);
@@ -312,6 +604,27 @@ bool Grid::containsSubgrid(Subgrid *sg) const {
     return false;
 }
 
+
+GlobalCoordinate Grid::resolveBMap(const GlobalCoordinate &src) const {
+    for(int i = 0; i < mBorderSrcRegions.size(); i++) {
+        if(mBorderSrcSubgrids[i] != src.sg) continue;
+        if(mBorderSrcRegions[i].contains(src.x, src.y)) {
+
+            Region srcRegion(src.x,src.y,src.x,src.y);
+            Region res = 
+                mBorderSrcRegions[i].analogousRegion(
+                    srcRegion, mBorderTgtRegions[i]);
+
+            return GlobalCoordinate(
+                mBorderTgtSubgrids[i],
+                res.lowX(),
+                res.lowY());
+        }
+    }
+
+    return src;
+}
+
 void Grid::addSubgrid(Subgrid *sg) {
     mSubgrids.push_back(sg);
 }
@@ -333,384 +646,5 @@ void Grid::addBorder(const Region &srcRegion, Subgrid *srcSG,
     mBorderTgtSubgrids.push_back(tgtSG);
 
     mBorderRotation.push_back(rotation);
-}
-
-void Grid::placeAdjacentLR(Subgrid *sgL, Subgrid *sgR) {
-    // Check validity of parameters
-    if(!containsSubgrid(sgL) || !containsSubgrid(sgR)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sgL->rightGhostRegion(), sgL, sgR->leftRegion(),  sgR, 0);
-    addBorder(sgR->leftGhostRegion(),  sgR, sgL->rightRegion(), sgL, 0);
-}
-
-void Grid::placeAdjacentRL(Subgrid *sgR, Subgrid *sgL) {
-    // Check validity of parameters
-    if(!containsSubgrid(sgR) || !containsSubgrid(sgL)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sgL->rightGhostRegion(), sgL, sgR->leftRegion(),  sgR, 0);
-    addBorder(sgR->leftGhostRegion(),  sgR, sgL->rightRegion(), sgL, 0);
-}
-
-void Grid::placeAdjacentTB(Subgrid *sgT, Subgrid *sgB) {
-    // Check validity of parameters
-    if(!containsSubgrid(sgT) || !containsSubgrid(sgB)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sgT->bottomGhostRegion(), sgT, sgB->topRegion(),    sgB, 0);
-    addBorder(sgB->topGhostRegion(),    sgB, sgT->bottomRegion(), sgT, 0);
-}
-
-void Grid::placeAdjacentBT(Subgrid *sgB, Subgrid *sgT) {
-    // Check validity of parameters
-    if(!containsSubgrid(sgB) || !containsSubgrid(sgT)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sgT->bottomGhostRegion(), sgT, sgB->topRegion(),    sgB, 0);
-    addBorder(sgB->topGhostRegion(),    sgB, sgT->bottomRegion(), sgT, 0);
-}
-
-void Grid::connectTtoB(Subgrid *sg1, Subgrid *sg2) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg1) || !containsSubgrid(sg2)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-    
-    // connectTtoB is equivalent to placeAdjacentBT
-    placeAdjacentBT(sg1, sg2);
-}
-
-void Grid::connectRtoL(Subgrid *sg1, Subgrid *sg2) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg1) || !containsSubgrid(sg2)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    // connectRtoL is equivalent to placeAdjacentLR
-    placeAdjacentLR(sg1, sg2);
-}
-
-void Grid::connectBtoT(Subgrid *sg1, Subgrid *sg2) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg1) || !containsSubgrid(sg2)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    // connectBtoT is equivalent to placeAdjacentTB
-    placeAdjacentTB(sg1, sg2);
-}
-
-void Grid::connectLtoR(Subgrid *sg, Subgrid *sg2) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg) || !containsSubgrid(sg2)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    // connectLtoR is equivalent to placeAdjacentRL
-    connectRtoL(sg, sg2);
-}
-
-void Grid::connectLtoT(Subgrid *sg, Subgrid *sgBL) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg) || !containsSubgrid(sgBL)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->leftGhostRegion(),  sg,   sgBL->topRegion(),  sgBL,
-              Environment::numNeighbors() / 4);
-    addBorder(sgBL->topGhostRegion(), sgBL, sg->leftRegion(),   sg,
-              Environment::numNeighbors() / 4);
-}
-
-void Grid::connectLtoB(Subgrid *sg, Subgrid *sgTL) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg) || !containsSubgrid(sgTL)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->leftGhostRegion(),     sg,   sgTL->bottomRegion(), sgTL,
-              Environment::numNeighbors() / 4);
-    addBorder(sgTL->bottomGhostRegion(), sgTL, sg->leftRegion(),     sg,
-              Environment::numNeighbors() / 4);
-}
-
-void Grid::connectRtoT(Subgrid *sg, Subgrid *sgBR) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg) || !containsSubgrid(sgBR)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->rightGhostRegion(),  sg,  sgBR->topRegion(), sgBR,
-              Environment::numNeighbors() / 4);
-    addBorder(sgBR->topGhostRegion(), sgBR, sg->rightRegion(), sg,
-              Environment::numNeighbors() / 4);
-}
-
-void Grid::connectRtoB(Subgrid *sg, Subgrid *sgTR) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg) || !containsSubgrid(sgTR)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->rightGhostRegion(),    sg,   sgTR->bottomRegion(), sgTR,
-              Environment::numNeighbors() / 4);
-    addBorder(sgTR->bottomGhostRegion(), sgTR, sg->rightRegion(), sg,
-              Environment::numNeighbors() / 4);
-}
-
-void Grid::connectTtoL(Subgrid *sg, Subgrid *sgTR) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg) || !containsSubgrid(sgTR)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->topGhostRegion(),    sg,   sgTR->leftRegion(), sgTR,
-              Environment::numNeighbors() / 4);
-    addBorder(sgTR->leftGhostRegion(), sgTR, sg->topRegion(), sg,
-              Environment::numNeighbors() / 4);
-}
-
-void Grid::connectTtoR(Subgrid *sg, Subgrid *sgTL) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg) || !containsSubgrid(sgTL)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->topGhostRegion(),     sg,   sgTL->rightRegion(), sgTL,
-              Environment::numNeighbors() / 4);
-    addBorder(sgTL->rightGhostRegion(), sgTL, sg->topRegion(),     sg,
-              Environment::numNeighbors() / 4);
-}
-
-void Grid::connectBtoL(Subgrid *sg, Subgrid *sgBR) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg) || !containsSubgrid(sgBR)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->bottomGhostRegion(),   sg, sgBR->leftRegion(), sgBR,
-              Environment::numNeighbors() / 4);
-    addBorder(sgBR->leftGhostRegion(), sgBR, sg->bottomRegion(), sg,
-              Environment::numNeighbors() / 4);
-}
-
-void Grid::connectBtoR(Subgrid *sg, Subgrid *sgBL) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg) || !containsSubgrid(sgBL)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->bottomGhostRegion(),   sg, sgBL->rightRegion(), sgBL,
-              Environment::numNeighbors() / 4);
-    addBorder(sgBL->rightGhostRegion(), sgBL, sg->bottomRegion(), sg,
-              Environment::numNeighbors() / 4);
-}
-
-void Grid::connectLtoL(Subgrid *sgT, Subgrid *sgB) {
-    // Check validity of parameters
-    if(!containsSubgrid(sgT) || !containsSubgrid(sgB)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sgT->leftGhostRegion(), sgT, sgB->leftRegion(), sgB,
-              Environment::numNeighbors() / 2);
-    addBorder(sgB->leftGhostRegion(), sgB, sgT->leftRegion(), sgT,
-              Environment::numNeighbors() / 4);
-}
-
-void Grid::connectRtoR(Subgrid *sgT, Subgrid *sgB) {
-    // Check validity of parameters
-    if(!containsSubgrid(sgT) || !containsSubgrid(sgB)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sgT->rightGhostRegion(), sgT, sgB->rightRegion(), sgB,
-              Environment::numNeighbors() / 2);
-    addBorder(sgB->rightGhostRegion(), sgB, sgT->rightRegion(), sgT,
-              Environment::numNeighbors() / 4);
-}
-
-void Grid::connectTtoT(Subgrid *sgL, Subgrid *sgR) {
-    // Check validity of parameters
-    if(!containsSubgrid(sgL) || !containsSubgrid(sgR)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sgL->topGhostRegion(), sgL, sgR->topRegion(), sgR,
-              Environment::numNeighbors() / 2);
-    addBorder(sgR->topGhostRegion(), sgR, sgL->topRegion(), sgL,
-              Environment::numNeighbors() / 4);
-}
-
-void Grid::connectBtoB(Subgrid *sgL, Subgrid *sgR) {
-    // Check validity of parameters
-    if(!containsSubgrid(sgL) || !containsSubgrid(sgR)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sgL->bottomGhostRegion(), sgL, sgR->bottomRegion(), sgR,
-              Environment::numNeighbors() / 2);
-    addBorder(sgR->bottomGhostRegion(), sgR, sgL->bottomRegion(), sgL,
-              Environment::numNeighbors() / 4);
-}
-
-void Grid::wrapLR(Subgrid *sg) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->leftGhostRegion(),  sg, sg->rightRegion(), sg,
-              Environment::numNeighbors() / 2);
-    addBorder(sg->rightGhostRegion(), sg, sg->leftRegion(), sg,
-              Environment::numNeighbors() / 2);
-}
-
-void Grid::wrapTB(Subgrid *sg) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->topGhostRegion(),    sg, sg->bottomRegion(), sg,
-              Environment::numNeighbors() / 2);
-    addBorder(sg->bottomGhostRegion(), sg, sg->topRegion(),    sg,
-              Environment::numNeighbors() / 2);
-}
-
-void Grid::mirrorB(Subgrid *sg) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->bottomGhostRegion(), sg, sg->bottomRegion(), sg,
-              Environment::numNeighbors() / 2);
-}
-
-void Grid::mirrorL(Subgrid *sg) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->leftGhostRegion(), sg, sg->leftRegion(), sg,
-              Environment::numNeighbors() / 2);
-}
-
-void Grid::mirrorR(Subgrid *sg) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->rightGhostRegion(), sg, sg->rightRegion(), sg,
-              Environment::numNeighbors() / 2);
-}
-
-void Grid::mirrorT(Subgrid *sg) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    addBorder(sg->topGhostRegion(), sg, sg->topRegion(), sg,
-              Environment::numNeighbors() / 2);
-}
-
-void Grid::foldT(Subgrid *sg) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    // Get each half of the top's ghost region
-    Region ghost1 = Region(1, sg->h() + 1,
-                           floor(sg->w() / 2.0), sg->h() + 1);
-    Region ghost2 = Region(floor(sg->w() / 2.0) + 1, sg->h() + 1,
-                           sg->w(), sg->h() + 1);
-    
-    // Get each half of the top region
-    Region half1 = Region(floor(sg->w() / 2.0), sg->h(),
-                          1, sg->h());
-    Region half2 = Region(sg->w(), sg->h(),
-                          floor(sg->w() / 2.0) + 1, sg->h());
-
-    // Do borders for the fold
-    addBorder(ghost1, sg, half2, sg, Environment::numNeighbors() / 2);
-    addBorder(ghost2, sg, half1, sg, Environment::numNeighbors() / 2);
-}
-
-void Grid::foldB(Subgrid *sg) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    // Get each half of the bottom's ghost region
-    Region ghost1 = Region(1, 0,
-                           floor(sg->w() / 2.0), 0);
-    Region ghost2 = Region(floor(sg->w() / 2.0) + 1, 0,
-                           sg->w(), 0);
-    
-    // Get each half of the bottom region
-    Region half1 = Region(floor(sg->w() / 2.0), 1, 1, 1);
-    Region half2 = Region(sg->w(), 1, floor(sg->w() / 2.0) + 1, 1);
-
-    // Do borders for the fold
-    addBorder(ghost1, sg, half2, sg, Environment::numNeighbors() / 2);
-    addBorder(ghost2, sg, half1, sg, Environment::numNeighbors() / 2);
-}
-
-void Grid::foldL(Subgrid *sg) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    // Get each half of the left's ghost region
-    Region ghost1 = Region(0, 1,
-                           0, floor(sg->w() / 2.0));
-    Region ghost2 = Region(0, floor(sg->w() / 2.0) + 1,
-                           0, sg->w());
-    
-    // Get each half of the left region
-    Region half1 = Region(1, floor(sg->w() / 2.0),
-                          1, 1);
-    Region half2 = Region(1, sg->w(),
-                          1, floor(sg->w() / 2.0) + 1);
-
-    // Do borders for the fold
-    addBorder(ghost1, sg, half2, sg, Environment::numNeighbors() / 2);
-    addBorder(ghost2, sg, half1, sg, Environment::numNeighbors() / 2);
-}
-
-void Grid::foldR(Subgrid *sg) {
-    // Check validity of parameters
-    if(!containsSubgrid(sg)) {
-        error(ERR_GRID__UNKNOWN_SUBGRID);
-    }
-
-    // Get each half of the right's ghost region
-    Region ghost1 = Region(sg->w() + 1, 1,
-                           sg->w() + 1, floor(sg->h() / 2.0));
-    Region ghost2 = Region(sg->w() + 1, floor(sg->h() / 2.0) + 1,
-                           sg->w() + 1, sg->h());
-    
-    // Get each half of the right region
-    Region half1 = Region(sg->w(), floor(sg->h() / 2.0),
-                          sg->w(), 1);
-                          
-    Region half2 = Region(sg->w(), sg->h(),
-                          sg->w(), floor(sg->h() / 2.0) + 1);
-
-    // Do borders for the fold
-    addBorder(ghost1, sg, half2, sg, Environment::numNeighbors() / 2);
-    addBorder(ghost2, sg, half1, sg, Environment::numNeighbors() / 2);
 }
 

@@ -9,6 +9,7 @@
 #include "binIO.hpp"
 #include <iostream>
 #include <fstream>
+#include <map>
 using namespace std;
 
 Environment::NeighborMap_t      Environment::mNeighbors;
@@ -16,6 +17,7 @@ Environment::SubgridMap_t       Environment::mSubgrids;
 Environment::GridMap_t          Environment::mGrids;
 Environment::DistributionMap_t  Environment::mDistributions;
 Environment::ScheduleMap_t      Environment::mSchedules;
+Environment::DataObjectMap_t    Environment::mDataObjects;
 
 static bool debug = false;
 void initializeModule_environment() {
@@ -54,7 +56,7 @@ Subgrid* Environment::newSubgrid(const string &id) {
     DBG_MSG_V("Create a new subgrid.", id);
 
     // Create the new subgrid
-    Subgrid *sg = new Subgrid(id);
+    Subgrid *sg = new Subgrid(id, mSubgrids.size()+1);
 
     // Attempt to insert the new neighbor into the environment.  Error out
     // if the neighbor already exists.
@@ -130,12 +132,46 @@ void Environment::newObj(const std::string &id, Schedule **sched) {
     *sched = newSchedule(id);
 }
 
+DataObject* Environment::newDataObject(const std::string &id) {
+    DBG_MSG_V("Create a new data object.", id);
+
+    // Create the new schedule
+    DataObject *data = new DataObject(id);
+
+    // Attempt to insert the new distribution into the environment.  Error out
+    // if the distribution already exists.
+    pair<DataObjectMap_t::iterator, bool> ret;
+    ret = mDataObjects.insert(make_pair(id, data));
+    if(ret.second == false) {
+        error(ERR_ENV__DUPLICATE_ENTRY, id);
+    }
+    return (*ret.first).second;
+}
+
+void Environment::newObj(const std::string &id, DataObject **data) {
+    DBG_MSG_V("Create a new data object.", id);
+
+    *data = newDataObject(id);
+}
+
 Neighbor* Environment::getNeighbor(const string &id) {
     return (*mNeighbors.find(id)).second;
 }
 
+
 Subgrid* Environment::getSubgrid(const string &id) {
-    return (*mSubgrids.find(id)).second;
+    Subgrid *sg = (*mSubgrids.find(id)).second;
+    return sg;
+}
+
+map<string, Neighbor*>::const_iterator Environment::neighborsBegin()
+{
+    return mNeighbors.begin();
+}
+
+map<string, Neighbor*>::const_iterator Environment::neighborsEnd()
+{
+    return mNeighbors.end();
 }
 
 Grid* Environment::getGrid(const string &id) {
@@ -148,6 +184,10 @@ Distribution* Environment::getDistribution(const string &id) {
 
 Schedule* Environment::getSchedule(const std::string &id) {
     return (*mSchedules.find(id)).second;
+}
+
+DataObject* Environment::getDataObject(const std::string &id) {
+    return (*mDataObjects.find(id)).second;
 }
 
 void Environment::print(ostream &out) {
@@ -198,7 +238,7 @@ void Environment::print(ostream &out) {
             (i->second)->print(out);
         }
     }
-    
+
     // print schedules
     if(isMasterRank()) {
         if(mSchedules.empty()) {

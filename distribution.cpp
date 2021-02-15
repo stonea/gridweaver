@@ -36,9 +36,6 @@ void Distribution::clear(int nProcs) {
 
 void Distribution::applyFillBlock(Grid *g, int nProcs, int blockH)
 {
-    cout << "TODO: applyFillBlock is assuming all subgrids of g are"
-         << " the same size." << endl;
-
     // Copy parameters into object's state
     mGrid = g;
     mnProcs = nProcs;
@@ -51,18 +48,22 @@ void Distribution::applyFillBlock(Grid *g, int nProcs, int blockH)
     for(int i = 1; i <= mGrid->numSubgrids(); i++) {
         blk = applyFillBlockToSG(mGrid->subgrid(i), blk+1);
     }
-
-    // Globally replicate distribution data
-    //globallyReplicate();
 }
 
 void Distribution::applyBlockFill(Grid *g, int nProcs, int blockW)
 {
-    // TODO: Implement
-    error(ERR_GENERIC__TODO);
-
-    // Globally replicate distribution data
-    //globallyReplicate();
+    // Copy parameters into object's state
+    mGrid = g;
+    mnProcs = nProcs;
+    mBlkW = blockW;
+    mBlkH = g->subgrid(1)->h();
+    clear(mnProcs);
+    
+    // Iterate through each subgrid applying the distribution
+    int blk = 0;
+    for(int i = 1; i <= mGrid->numSubgrids(); i++) {
+        blk = applyBlockFillToSG(mGrid->subgrid(i), blk+1);
+    }
 }
 
 void Distribution::applyBlockCyclic(
@@ -80,28 +81,63 @@ void Distribution::applyBlockCyclic(
     for(int i = 1; i <= mGrid->numSubgrids(); i++) {
         blk = applyBlockCyclicToSG(mGrid->subgrid(i), blk+1);
     }
+}
 
-    // Globally replicate distribution data
-    //globallyReplicate();
+void Distribution::applyBlankDist(Grid *g, int nProcs, int blockW, int blockH) {
+    // Copy parameters into object's state
+    mGrid = g;
+    mnProcs = nProcs;
+    mBlkW = blockW;
+    mBlkH = blockH;
+    clear(mnProcs);
+
+    // Itialize sg2gbid 
+    int blk = 0;
+    for(int i = 1; i <= mGrid->numSubgrids(); i++) {
+        Subgrid *sg = mGrid->subgrid(i);
+        mSg2gbid.insert(make_pair(sg, blk+1));
+        blk += numBlksInSg(sg);
+    }
+
+    // Allocate room for gbid2proc and gbid2lbid; initialize all values to -1
+    mGbid2proc.resize(lastGbidInSg(mGrid->subgrid(mGrid->numSubgrids())));
+    mGbid2lbid.resize(lastGbidInSg(mGrid->subgrid(mGrid->numSubgrids())));
+    for(int i = 0; i < mGbid2proc.size(); i++) {
+        mGbid2proc[i] = -1;
+        mGbid2lbid[i] = -1;
+    }
+}
+
+void Distribution::setProcForBlock(int gbid, int rank) {
+    if(rank > mProc2nLbid.size() || rank < 0) {
+        cout << "INVALID RANK" << rank << mProc2nLbid.size() << endl;
+    }
+
+    mGbid2proc[gbid-1] = rank;
+    mLbid2gbid[rank].push_back(gbid);
+    mProc2nLbid[rank]++;
+    mGbid2lbid[gbid-1] = mLbid2gbid[rank].size();
 }
 
 void Distribution::print(ostream &out) const {
     printObj_start(out, "Distribution", mName);
-    printObj_property(out, "grid", mGrid);
-    printObj_property(out, "nProcs", mnProcs);
-    printObj_property(out, "blkW", mBlkW);
-    printObj_property(out, "blkH", mBlkH);
-    printObj_property(out, "sg2gbid");
-        printVals(out, mSg2gbid.begin(), mSg2gbid.end());
-    printObj_property(out, "proc2nLbid");
-        printVals(out, mProc2nLbid.begin(), mProc2nLbid.end());
-    printObj_property(out, "gbid2proc");
-        printVals(out, mGbid2proc.begin(), mGbid2proc.end());
-    printObj_property(out, "gbid2lbid");
-        printVals(out, mGbid2lbid.begin(), mGbid2lbid.end());
-    for(int i=0; i < mnProcs; i++) {
-        printObj_property(out, "lbid2gbid@" + str(i));
-        printVals(out, mLbid2gbid[i].begin(), mLbid2gbid[i].end());
+    if(mGrid != NULL) {
+        printObj_property(out, "grid", mGrid);
+        printObj_property(out, "nProcs", mnProcs);
+        printObj_property(out, "blkW", mBlkW);
+        printObj_property(out, "blkH", mBlkH);
+        printObj_property(out, "sg2gbid");
+            printVals(out, mSg2gbid.begin(), mSg2gbid.end());
+        printObj_property(out, "proc2nLbid");
+            printVals(out, mProc2nLbid.begin(), mProc2nLbid.end());
+        printObj_property(out, "gbid2proc");
+            printVals(out, mGbid2proc.begin(), mGbid2proc.end());
+        printObj_property(out, "gbid2lbid");
+            printVals(out, mGbid2lbid.begin(), mGbid2lbid.end());
+        for(int i=0; i < mnProcs; i++) {
+            printObj_property(out, "lbid2gbid@" + str(i));
+            printVals(out, mLbid2gbid[i].begin(), mLbid2gbid[i].end());
+        }
     }
     printObj_end(out);
 }
@@ -184,6 +220,52 @@ int Distribution::firstGbidInSg(Subgrid *sg) const {
     if(i == mSg2gbid.end()) { error(ERR_DIST__INVALID_SG); }
 
     return (*i).second;
+}
+
+int Distribution::numBlocks() const {
+    return lastGbidInSg(mGrid->subgrid(mGrid->numSubgrids()));
+}
+
+int Distribution::numNodesForProc(int pid) const {
+    int n = 0;
+
+    // Iterate through blocks
+    for(int gbid = 1; gbid <= numBlocks(); gbid++) {
+        Subgrid *sg = gbidSubgrid(gbid);
+        if(gbidProc(gbid) == pid) {
+            n += MIN(mBlkW * mBlkH, sg->w() * sg->h());
+        }
+    }
+
+    return n; 
+}
+
+int Distribution::gbid2SG(int gbid) const {
+    for(int i = 1; i <= mGrid->numSubgrids(); i++) {
+        Subgrid *sg = mGrid->subgrid(i);
+        if(gbid >= firstGbidInSg(sg) &&
+           gbid <= lastGbidInSg(sg))
+        {
+            return i;
+        }
+    }
+}
+
+bool Distribution::isBorderBlock(int gbid) const {
+    Subgrid *sg = gbidSubgrid(gbid);
+    int nBlocksHoriz = blocksHorizInSg(sg);
+    int nBlksInSG    = numBlksInSg(sg);
+    int gbidAdjusted = gbid - firstGbidInSg(sg) + 1;
+
+    return
+      (gbidAdjusted <= nBlocksHoriz ||
+       gbidAdjusted >= (nBlksInSG - nBlocksHoriz + 1) ||
+       gbidAdjusted % nBlocksHoriz == 0 ||
+       gbidAdjusted % nBlocksHoriz == 1);
+}
+
+bool Distribution::isInteriorBlock(int gbid) const {
+    return !isBorderBlock(gbid);
 }
 
 Subgrid *Distribution::gbidSubgrid(int gbid) const {
@@ -271,8 +353,8 @@ set<int> Distribution::gbidsIntersectingRegion(
 
     // Iterate through each block in expandedRgn.  (x,y) is the coordinates of
     // the lower left corner (the key point) of each block.
-    for(int y = expandedRgn.lowY(); y < expandedRgn.highY(); y += mBlkH) {
-        for(int x = expandedRgn.lowX(); x < expandedRgn.highX(); x += mBlkW) {
+    for(int y = expandedRgn.lowY(); y <= expandedRgn.highY(); y += mBlkH) {
+        for(int x = expandedRgn.lowX(); x <= expandedRgn.highX(); x += mBlkW) {
             int gbid = gbidAtPos(sg, x, y);
             blocks.insert(gbid);
             gbid++;
@@ -421,21 +503,35 @@ int Distribution::applyFillBlockToSG(Subgrid *sg, int startingBlk)
     mGbid2proc.resize(lastGbidInSg(sg));
     mGbid2lbid.resize(lastGbidInSg(sg));
 
-    // Iterate through the vertical extent of the subgrid
-    int gbid = startingBlk;
-    int procID = 0;
-    for(int y = 1; y < sg->h(); y += mBlkH) {
-        gbid = gbidAtPos(sg,1,y);
+    // If we have a single element block
+    if(sg->w() == 1 || sg->h() == 1) {
+        int gbid = gbidAtPos(sg,1,1);
 
-        mGbid2proc[gbid-1] = procID;
-        mGbid2lbid[gbid-1] = lbid[procID];
-        mLbid2gbid[procID].push_back(gbid);
-        assert(mLbid2gbid[procID].size() == lbid[procID]);
-        lbid[procID]++;
-        
-        // Increment procID, cycle back to 0 if we've exceeded
-        // the number of processors.
-        procID = (procID + 1) % mnProcs;
+        mGbid2proc[gbid-1] = 0;
+        mGbid2lbid[gbid-1] = lbid[0];
+        mLbid2gbid[0].push_back(gbid);
+        assert(mLbid2gbid[0].size() == lbid[0]);
+        lbid[0]++;
+    } else {
+        // Iterate through the vertical extent of the subgrid
+        int gbid = startingBlk;
+        int procID;
+        if(startingBlk > 1) {
+            procID = (gbidProc(startingBlk-1) + 1) % mnProcs;
+        } else { procID = 0; }
+        for(int y = 1; y < sg->h(); y += mBlkH) {
+            gbid = gbidAtPos(sg,1,y);
+
+            mGbid2proc[gbid-1] = procID;
+            mGbid2lbid[gbid-1] = lbid[procID];
+            mLbid2gbid[procID].push_back(gbid);
+            assert(mLbid2gbid[procID].size() == lbid[procID]);
+            lbid[procID]++;
+            
+            // Increment procID, cycle back to 0 if we've exceeded
+            // the number of processors.
+            procID = (procID + 1) % mnProcs;
+        }
     }
 
     // Update the list of how many LBID's exist per processor
@@ -444,6 +540,77 @@ int Distribution::applyFillBlockToSG(Subgrid *sg, int startingBlk)
     return lastGbidInSg(sg);
     //return 0;
 }
+
+
+int Distribution::applyBlockFillToSG(Subgrid *sg, int startingBlk)
+{
+    /* A two-dimensional block fill distribution:
+     *
+     *    ,---------------------,
+     *    |.-----,.-----,.-----,|
+     *    || blk || blk || blk ||
+     *    ||     ||     ||     ||
+     *    ||     ||     ||     ||
+     *    ||     ||     ||     ||
+     *    ||     ||     ||     ||
+     *    ||     ||     ||     ||
+     *    |`-----'`-----'`-----'|
+     *    `---------------------'
+     */
+    //Sg2gbid_t  mSg2gbid;                // Maps subgrids to their starting blk
+    //std::vector<int>  mProc2nLbid;      // Keeps track of how many LBIDs are
+                                        // allocated to each proc.
+    //std::vector<int>  mGbid2proc;       // Maps global block ID's to processors
+    //std::vector<int>  mGbid2lbid;       // Maps global block ID's to local ID's
+    //std::vector<std::vector<int> > mLbid2gbid;  // Maps local block ID's to
+
+    // Specify the starting block for the subgrid
+    vector<int> lbid = vector<int>(mnProcs);  // stores lbid for each proc
+    for(int i = 0; i < mnProcs; i++) { lbid[i] = mProc2nLbid[i] + 1; }
+    mSg2gbid.insert(make_pair(sg, startingBlk));
+
+    // Make room for the results
+    mGbid2proc.resize(lastGbidInSg(sg));
+    mGbid2lbid.resize(lastGbidInSg(sg));
+
+    // If we have a single element block
+    if(sg->w() == 1 || sg->h() == 1) {
+        int gbid = gbidAtPos(sg,1,1);
+
+        mGbid2proc[gbid-1] = 0;
+        mGbid2lbid[gbid-1] = lbid[0];
+        mLbid2gbid[0].push_back(gbid);
+        assert(mLbid2gbid[0].size() == lbid[0]);
+        lbid[0]++;
+    } else {
+        // Iterate through the vertical extent of the subgrid
+        int gbid = startingBlk;
+        int procID;
+        if(startingBlk > 1) {
+            procID = (gbidProc(startingBlk-1) + 1) % mnProcs;
+        } else { procID = 0; }
+        for(int x = 1; x < sg->w(); x += mBlkW) {
+            gbid = gbidAtPos(sg,x,1);
+
+            mGbid2proc[gbid-1] = procID;
+            mGbid2lbid[gbid-1] = lbid[procID];
+            mLbid2gbid[procID].push_back(gbid);
+            assert(mLbid2gbid[procID].size() == lbid[procID]);
+            lbid[procID]++;
+            
+            // Increment procID, cycle back to 0 if we've exceeded
+            // the number of processors.
+            procID = (procID + 1) % mnProcs;
+        }
+    }
+
+    // Update the list of how many LBID's exist per processor
+    for(int i = 0; i < mnProcs; i++) { mProc2nLbid[i] = lbid[i] - 1; }
+
+    return lastGbidInSg(sg);
+    //return 0;
+}
+
 
 void Distribution::saveSg2gbidEntry(
     std::ostream &out,

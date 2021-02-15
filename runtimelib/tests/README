@@ -120,4 +120,3 @@ Tests:
        /data_icosahedral            Construct a data object for an icosahedral
                                     grid that uses a block-block distribution.
 
-

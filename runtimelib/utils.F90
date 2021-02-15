@@ -35,6 +35,15 @@ module mod_utils
         res = (y-1) * N + x
     end function
 
+
+!    subroutine printDistIntVecVec( &
+!        transferRecvAtLBID_offsets, transferRecvAtLBID_values, rank, out);
+!include 'mpif.h'
+!        integer, intent(in) :: vec(:)
+!        integer, intent(in) :: rank, out
+!
+!    end subroutine
+
     subroutine printMatrix(A, n)
         real, intent(in) :: A(:)
         integer, intent(in) :: n

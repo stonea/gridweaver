@@ -77,6 +77,8 @@ class CellFieldPicture {
     int mBoxX1, mBoxY1, mBoxX2, mBoxY2;
 
     // The following constants control the spacing between cells:
+    //static const int mSpacing  = 60;
+    //static const int mRadius   = 25;
     int mSpacing;
     int mRadius;
 

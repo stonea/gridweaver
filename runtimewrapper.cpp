@@ -68,7 +68,13 @@ void __subgrid_height(char *sg, int &ret) {
     ret = obj_sg->h();
 }
 
-    
+void __subgrid_getID(char *sg, int &ret) {
+    DBG_MSG_V("In function __subgrid_getID", sg);
+
+    Subgrid *obj_sg = Environment::getSubgrid(sg);
+    ret = obj_sg->sgid();
+}
+
 void __grid_new(char *g) {
     DBG_MSG_V("In function __grid_new.", g);
 
@@ -100,311 +106,8 @@ void __grid_addBorder(
                      rotation);
 }
 
-void __grid_placeAdjacentLR(char *g, char *sgL, char *sgR) {
-    DBG_MSG_V3("In function __grid_placeAdjacentLR.", g, sgL, sgR);
-
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sgL = Environment::getSubgrid(sgL);
-    Subgrid *obj_sgR = Environment::getSubgrid(sgR);
-    
-    obj_g->placeAdjacentLR(obj_sgL, obj_sgR);
-}
-
-void __grid_placeAdjacentRL(char *g, char *sgR, char *sgL) {
-    DBG_MSG_V3("In function __grid_placeAdjacentRL.", g, sgR, sgL);
-
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sgR = Environment::getSubgrid(sgR);
-    Subgrid *obj_sgL = Environment::getSubgrid(sgL);
-
-    obj_g->placeAdjacentRL(obj_sgR, obj_sgL);
-}
-
-void __grid_placeAdjacentTB(char *g, char *sgT, char *sgB) {
-    DBG_MSG_V3("In function __grid_placeAdjacentTB", g, sgT, sgB);
-
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sgT = Environment::getSubgrid(sgT);
-    Subgrid *obj_sgB = Environment::getSubgrid(sgB);
-
-    obj_g->placeAdjacentTB(obj_sgT, obj_sgB);
-}
-
-void __grid_placeAdjacentBT(char *g, char *sgB, char *sgT) {
-    DBG_MSG_V3("In function __grid_placeAdjacentBT", g, sgB, sgT);
-
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sgB = Environment::getSubgrid(sgB);
-    Subgrid *obj_sgT = Environment::getSubgrid(sgT);
-
-    obj_g->placeAdjacentBT(obj_sgB, obj_sgT);
-}
-
-void __grid_connectTtoB(char *g, char *sg1, char  *sg2) {
-    DBG_MSG_V3("In function __grid_connectTtoB", g, sg1, sg2);
-
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sg1 = Environment::getSubgrid(sg1);
-    Subgrid *obj_sg2 = Environment::getSubgrid(sg2);
-
-    obj_g->connectTtoB(obj_sg1, obj_sg2);
-}
-
-void __grid_connectRtoL(char *g, char *sg1, char  *sg2) {
-    DBG_MSG_V3("In function __grid_connectRtoL", g, sg1, sg2);
-
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sg1 = Environment::getSubgrid(sg1);
-    Subgrid *obj_sg2 = Environment::getSubgrid(sg2);
-
-    obj_g->connectRtoL(obj_sg1, obj_sg2);
-}
-
-void __grid_connectBtoT(char *g, char *sg1, char  *sg2) {
-    DBG_MSG_V3("In function __grid_connectBtoT", g, sg1, sg2);
-    
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sg1 = Environment::getSubgrid(sg1);
-    Subgrid *obj_sg2 = Environment::getSubgrid(sg2);
-
-    obj_g->connectBtoT(obj_sg1, obj_sg2);
-}
-
-void __grid_connectLtoR(char *g, char *sg1, char  *sg2) {
-    DBG_MSG_V3("In function __grid_connectLtoR", g, sg1, sg2);
-    
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sg1 = Environment::getSubgrid(sg1);
-    Subgrid *obj_sg2 = Environment::getSubgrid(sg2);
-
-    obj_g->connectLtoR(obj_sg1, obj_sg2);
-}
-
-void __grid_connectLtoT(char *g, char *sg,  char *sgBL) {
-    DBG_MSG_V3("In function __grid_connectLtoT", g, sg, sgBL);
-    
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sg1 = Environment::getSubgrid(sg);
-    Subgrid *obj_sg2 = Environment::getSubgrid(sgBL);
-
-    obj_g->connectLtoT(obj_sg1, obj_sg2);
-}
-
-void __grid_connectLtoB(char *g, char *sg,  char *sgTL) {
-    DBG_MSG_V3("In function __grid_connectLtoB", g, sg, sgTL);
-    
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sg1 = Environment::getSubgrid(sg);
-    Subgrid *obj_sg2 = Environment::getSubgrid(sgTL);
-
-    obj_g->connectLtoB(obj_sg1, obj_sg2);
-}
-
-void __grid_connectRtoT(char *g, char *sg,  char *sgBR) {
-    DBG_MSG_V3("In function __grid_connectRtoT", g, sg, sgBR);
-    
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sg1 = Environment::getSubgrid(sg);
-    Subgrid *obj_sg2 = Environment::getSubgrid(sgBR);
-
-    obj_g->connectRtoT(obj_sg1, obj_sg2);
-}
-
-void __grid_connectRtoB(char *g, char *sg,  char *sgTR) {
-    DBG_MSG_V3("In function __grid_connectRtoB", g, sg, sgTR);
-    
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sg1 = Environment::getSubgrid(sg);
-    Subgrid *obj_sg2 = Environment::getSubgrid(sgTR);
-
-    obj_g->connectRtoB(obj_sg1, obj_sg2);
-}
-
-void __grid_connectTtoL(char *g, char *sg,  char *sgTR) {
-    DBG_MSG_V3("In function __grid_connectTtoL", g, sg, sgTR);
-    
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sg1 = Environment::getSubgrid(sg);
-    Subgrid *obj_sg2 = Environment::getSubgrid(sgTR);
-
-    obj_g->connectTtoL(obj_sg1, obj_sg2);
-}
-
-void __grid_connectTtoR(char *g, char *sg,  char *sgTL) {
-    DBG_MSG_V3("In function __grid_connectTtoR", g, sg, sgTL);
-    
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sg1 = Environment::getSubgrid(sg);
-    Subgrid *obj_sg2 = Environment::getSubgrid(sgTL);
-
-    obj_g->connectTtoR(obj_sg1, obj_sg2);
-}
-
-void __grid_connectBtoL(char *g, char *sg,  char *sgBR) {
-    DBG_MSG_V3("In function __grid_connectBtoL", g, sg, sgBR);
-    
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sg1 = Environment::getSubgrid(sg);
-    Subgrid *obj_sg2 = Environment::getSubgrid(sgBR);
-
-    obj_g->connectBtoL(obj_sg1, obj_sg2);
-}
-
-void __grid_connectBtoR(char *g, char *sg,  char *sgBL) {
-    DBG_MSG_V3("In function __grid_connectBtoR", g, sg, sgBL);
-    
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sg1 = Environment::getSubgrid(sg);
-    Subgrid *obj_sg2 = Environment::getSubgrid(sgBL);
-
-    obj_g->connectBtoR(obj_sg1, obj_sg2);
-}
-
-void __grid_wrapLR(char *g, char *sg) {
-    DBG_MSG_V2("In function __grid_wrapLR", g, sg);
-
-    Grid    *obj_g  = Environment::getGrid(g);
-    Subgrid *obj_sg = Environment::getSubgrid(sg);
-
-    obj_g->wrapLR(obj_sg);
-}
-
-void __grid_wrapTB(char *g, char *sg) {
-    DBG_MSG_V2("In function __grid_wrapTB", g, sg);
-
-    Grid    *obj_g  = Environment::getGrid(g);
-    Subgrid *obj_sg = Environment::getSubgrid(sg);
-
-    obj_g->wrapTB(obj_sg);
-}
-
-/*
-void __grid_placeAdjacentWithOffsetLR(char *g, char *sgL, char *sgR,
-                                      int shiftUp)
-{
-    DBG_MSG_V4("In function __grid_placeAdjacentWithOffsetLR",
-              g, sgL, sgR, shiftUp);
-
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sgL = Environment::getSubgrid(sgL);
-    Subgrid *obj_sgR = Environment::getSubgrid(sgR);
-
-    obj_g->placeAdjacentWithOffsetLR(obj_sgL, obj_sgR, shiftUp);
-}
-
-void __grid_placeAdjacentWithOffsetRL(char *g, char *sgR, char *sgL,
-                                      int &shiftUp)
-{
-    DBG_MSG_V3("In function __grid_placeAdjacentWithOffsetRL",
-               sgR, sgL, shiftUp);
-
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sgR = Environment::getSubgrid(sgR);
-    Subgrid *obj_sgL = Environment::getSubgrid(sgL);
-
-    obj_g->placeAdjacentWithOffsetRL(obj_sgR, obj_sgL, shiftUp);
-}
-
-void __grid_placeAdjacentWithOffsetTB(char *g, char *sgT, char *sgB,
-                                      int &shiftRight)
-{
-    DBG_MSG_V3("In function __grid_placeAdjacentWithOffsetTB", sgT, sgB,
-               shiftRight);
-
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sgT = Environment::getSubgrid(sgT);
-    Subgrid *obj_sgB = Environment::getSubgrid(sgB);
-
-    obj_g->placeAdjacentWithOffsetTB(obj_sgT, obj_sgB, shiftRight);
-}
-
-void __grid_placeAdjacentWithOffsetBT(char *g, char *sgB, char *sgT,
-                                      int &shiftRight)
-{
-    DBG_MSG_V4("In function __grid_placeAdjacentWithOffsetBT", g, sgB, sgT,
-               shiftRight);
-
-    Grid    *obj_g   = Environment::getGrid(g);
-    Subgrid *obj_sgB = Environment::getSubgrid(sgB);
-    Subgrid *obj_sgT = Environment::getSubgrid(sgT);
-
-    obj_g->placeAdjacentWithOffsetBT(obj_sgB, obj_sgT, shiftRight);
-}
-*/
-void __grid_mirrorT(char *g, char *sg) {
-    DBG_MSG_V2("In function __grid_mirrorT", g, sg);
-
-    Grid    *obj_g  = Environment::getGrid(g);
-    Subgrid *obj_sg = Environment::getSubgrid(sg);
-
-    obj_g->mirrorT(obj_sg);
-}
-
-void __grid_mirrorB(char *g, char *sg) {
-    DBG_MSG_V2("In function __grid_mirrorB", g, sg);
-
-    Grid    *obj_g  = Environment::getGrid(g);
-    Subgrid *obj_sg = Environment::getSubgrid(sg);
-
-    obj_g->mirrorB(obj_sg);
-}
-
-void __grid_mirrorL(char *g, char *sg) {
-    DBG_MSG_V2("In function __grid_mirrorL", g, sg);
-
-    Grid    *obj_g  = Environment::getGrid(g);
-    Subgrid *obj_sg = Environment::getSubgrid(sg);
-
-    obj_g->mirrorL(obj_sg);
-}
-
-void __grid_mirrorR(char *g, char *sg) {
-    DBG_MSG_V2("In function __grid_mirrorR", g, sg);
-
-    Grid    *obj_g  = Environment::getGrid(g);
-    Subgrid *obj_sg = Environment::getSubgrid(sg);
-
-    obj_g->mirrorR(obj_sg);
-}
-
-void __grid_foldT(char *g, char *sg) {
-    DBG_MSG_V2("In function __grid_foldT", g, sg);
-
-    Grid    *obj_g  = Environment::getGrid(g);
-    Subgrid *obj_sg = Environment::getSubgrid(sg);
-
-    obj_g->foldT(obj_sg);
-}
-
-void __grid_foldB(char *g, char *sg) {
-    DBG_MSG_V2("In function __grid_foldB", g, sg);
-
-    Grid    *obj_g  = Environment::getGrid(g);
-    Subgrid *obj_sg = Environment::getSubgrid(sg);
-
-    obj_g->foldB(obj_sg);
-}
-
-void __grid_foldL(char *g, char *sg) {
-    DBG_MSG_V2("In function __grid_foldL", g, sg);
-
-    Grid    *obj_g  = Environment::getGrid(g);
-    Subgrid *obj_sg = Environment::getSubgrid(sg);
-
-    obj_g->foldL(obj_sg);
-}
-
-void __grid_foldR(char *g, char *sg) {
-    DBG_MSG_V2("In function __grid_foldR", g, sg);
-
-    Grid    *obj_g  = Environment::getGrid(g);
-    Subgrid *obj_sg = Environment::getSubgrid(sg);
-
-    obj_g->foldR(obj_sg);
-}
-
 void __grid_numSubgrids(char *g, int &ret) {
-    DBG_MSG_V("In function __grid_foldR", g);
+    DBG_MSG_V("In function __grid_numSubgirds", g);
 
     Grid    *obj_g  = Environment::getGrid(g);
     ret = obj_g->numSubgrids();
@@ -416,6 +119,7 @@ void __grid_getSubgrid(char *g, int &idx, char *ret) {
     Grid    *obj_g  = Environment::getGrid(g);
     strcpy(ret, obj_g->subgrid(idx)->getID().c_str());
 }
+
 
 void __distribution_new(char *name) {
     DBG_MSG_V("In function __distribution_new.", name);
@@ -432,6 +136,8 @@ void __distribution_applyFillBlock(char *dist, char *grid,
     Distribution *obj_dist = Environment::getDistribution(dist);
     Grid         *obj_g    = Environment::getGrid(grid);
     obj_dist->applyFillBlock(obj_g, nProcs, blockH);
+
+    
 }
 
 void __distribution_applyBlockFill(char *dist, char *grid,
@@ -456,6 +162,46 @@ void __distribution_applyBlockCyclic(
     obj_dist->applyBlockCyclic(obj_g, nProcs, blkW, blkH);
 }
 
+void __distribution_applyBlankDist(
+        char *dist, char *grid, int &nProcs, int &blkW, int &blkH)
+{
+    DBG_MSG_V5("In function __distribution_applyBlankDist.",
+               dist, grid, nProcs, blkW, blkH);
+
+    Distribution *obj_dist = Environment::getDistribution(dist);
+    Grid         *obj_g    = Environment::getGrid(grid);
+    obj_dist->applyBlankDist(obj_g, nProcs, blkW, blkH);
+}
+
+void __distribution_setProcForBlock(char *dist, int &gbid, int &rank)
+{
+    DBG_MSG_V3("In function __distribution_setProcForBlock.",
+               dist, gbid, rank);
+
+    Distribution *obj_dist = Environment::getDistribution(dist);
+    obj_dist->setProcForBlock(gbid, rank);
+}
+
+void __distribution_gbidAt(char *dist, char *sg, int &x, int &y, int &ret)
+{
+    DBG_MSG_V4("In function __distribution_gbidAt.", dist, sg, x, y);
+
+    Distribution *obj_dist = Environment::getDistribution(dist);
+    Subgrid *obj_sg = Environment::getSubgrid(sg);
+
+    ret = obj_dist->gbidAtPos(obj_sg, x, y);
+}
+
+void __distribution_gbidAtSGID(char *dist, int &sgid, int &x, int &y, int &ret)
+{
+    DBG_MSG_V4("In function __distribution_gbidAtSGID.", dist, sgid, x, y);
+
+    Distribution *obj_dist = Environment::getDistribution(dist);
+    Subgrid *obj_sg = obj_dist->grid()->subgrid(sgid);
+
+    ret = obj_dist->gbidAtPos(obj_sg, x, y);
+}
+
 void __distribution_visualize(char *dist, char *dirName) {
     DBG_MSG_V2("In function __distribution_visualize.", dist, dirName);
 
@@ -469,13 +215,25 @@ void __schedule_new(char *sched) {
     Schedule *obj_sched = Environment::newSchedule(sched);
 }
 
-void __schedule_calculate(char *sched, char *grid, char *dist) {
+void __schedule_calculate(char *sched, char *grid, char *dist, int &depth) {
     DBG_MSG_V3("In function __schedule_calculate.", sched, grid, dist);
 
     Schedule     *obj_sched = Environment::getSchedule(sched);
     Grid         *obj_g     = Environment::getGrid(grid);
     Distribution *obj_dist  = Environment::getDistribution(dist);
-    obj_sched->calculate(obj_g, obj_dist);
+    obj_sched->calculate(obj_g, obj_dist, depth);
+}
+
+void __schedule_calculateGhostNodePlan(char *sched, char *grid, char *dist,
+                                       int &depth)
+{
+    DBG_MSG_V4("In function __schedule_calculateGhostNodePlan.",
+        sched, grid, dist, depth);
+
+    Schedule     *obj_sched = Environment::getSchedule(sched);
+    Grid         *obj_g     = Environment::getGrid(grid);
+    Distribution *obj_dist  = Environment::getDistribution(dist);
+    obj_sched->calculateGhostNodePlan(obj_g, obj_dist, depth);
 }
 
 void __environment_print() {
@@ -604,6 +362,70 @@ void __schedule_transferToFortran(
         transferSendOrientation);
 }
 
+void __schedule_transferGhostSizesToFortran(
+    char *sched,
+    int &size_ghostMsgRecvFrom,
+    int &size_recvGhostMsgStart,
+    int &size_recvGhostMsgSG,
+    int &size_recvGhostMsgX,
+    int &size_recvGhostMsgY,
+    int &size_ghostMsgSendTo,
+    int &size_sendGhostMsgStart,
+    int &size_sendGhostMsgSG,
+    int &size_sendGhostMsgX,
+    int &size_sendGhostMsgY)
+{
+    DBG_MSG("In function __schedule_transferGhostSizesToFortran");
+
+    Schedule *obj_sched = Environment::getSchedule(sched);
+
+    obj_sched->transferGhostSizesToFortran(
+        size_ghostMsgRecvFrom,
+        size_recvGhostMsgStart,
+        size_recvGhostMsgSG,
+        size_recvGhostMsgX,
+        size_recvGhostMsgY,
+        size_ghostMsgSendTo,
+        size_sendGhostMsgStart,
+        size_sendGhostMsgSG,
+        size_sendGhostMsgX,
+        size_sendGhostMsgY);
+}
+
+void __schedule_transferGhostsToFortran(
+    char *sched,
+    int &nGhostMsgsRecv,
+    int *ghostMsgRecvFrom,
+    int *recvGhostMsgStart,
+    int *recvGhostMsgSG,
+    int *recvGhostMsgX,
+    int *recvGhostMsgY,
+    int &nGhostMsgsSend,
+    int *ghostMsgSendTo,
+    int *sendghostMsgStart,
+    int *sendGhostMsgSG,
+    int *sendGhostMsgX,
+    int *sendGhostMsgY)
+{
+    DBG_MSG("In function __schedule_transferGhostsToFortran");
+
+    Schedule *obj_sched = Environment::getSchedule(sched);
+
+    obj_sched->transferGhostsToFortran(
+        nGhostMsgsRecv,
+        ghostMsgRecvFrom,
+        recvGhostMsgStart,
+        recvGhostMsgSG,
+        recvGhostMsgX,
+        recvGhostMsgY,
+        nGhostMsgsSend,
+        ghostMsgSendTo,
+        sendghostMsgStart,
+        sendGhostMsgSG,
+        sendGhostMsgX,
+        sendGhostMsgY);
+}
+
 void __distribution_width(char *dist, int &ret) {
     DBG_MSG("In function __distribution_width");
     
@@ -623,6 +445,20 @@ void __distribution_numLocalBlocks(char *dist, int &ret) {
     
     Distribution *obj_dist = Environment::getDistribution(dist);
     ret = obj_dist->numLclBlocksForProc(myRank());
+}
+
+void __distribution_numBlocks(char *dist, int &ret) {
+    DBG_MSG("In function __distribution_numBlocks");
+    
+    Distribution *obj_dist = Environment::getDistribution(dist);
+    ret = obj_dist->numBlocks();
+}
+
+void __distribution_numNodesForProc(char *dist, int &pid, int &ret) {
+    DBG_MSG("In function __distribution_numNodesForProc");
+    
+    Distribution *obj_dist = Environment::getDistribution(dist);
+    ret = obj_dist->numNodesForProc(pid);
 }
 
 void __distribution_lbid2gbid(char *dist, int &lbid, int &ret) {
@@ -645,6 +481,28 @@ void __distribution_gbid2proc(char *dist, int &gbid, int &ret) {
     Distribution *obj_dist = Environment::getDistribution(dist);
     ret = obj_dist->gbidProc(gbid);
 }
+
+void __distribution_gbid2sg(char *dist, int &gbid, int &ret) {
+    DBG_MSG("In function __distribution_gbid2sg");
+    
+    Distribution *obj_dist = Environment::getDistribution(dist);
+    ret = obj_dist->gbid2SG(gbid);
+}
+
+void __distribution_firstGbidInSG(char *dist, char *sg, int &ret) {
+    Distribution *obj_dist = Environment::getDistribution(dist);
+    Subgrid *obj_sg = Environment::getSubgrid(sg);
+
+    ret = obj_dist->firstGbidInSg(obj_sg);
+}
+
+void __distribution_lastGbidInSG(char *dist, char *sg, int &ret) {
+    Distribution *obj_dist = Environment::getDistribution(dist);
+    Subgrid *obj_sg = Environment::getSubgrid(sg);
+
+    ret = obj_dist->lastGbidInSg(obj_sg);
+}
+
 
 void __distribution_blockLowX(char *dist, int &gbid, int &ret) {
     DBG_MSG("In function __distribution_blockLowX");
@@ -690,7 +548,7 @@ void __setColor(int &color) {
     DBG_MSG("In function __setColor");
 
     if(color == -1) { cout << "\e[0m"; }
-    if(color == -2) { cout << "\e[4;30m"; }
+    if(color == -2) { cout << "\e[4;49m"; }
     if(color == -3) { cout << "\e[1;30m"; }
     if(color == -4) { cout << "\e[40;97m"; }
     if(color == -5) { cout << COLOR_WHITE; }

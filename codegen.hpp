@@ -6,6 +6,8 @@
 #ifndef CODEGEN_HPP_
 #define CODEGEN_HPP_
 
+#include "analyses.hpp"
+
 #include <iostream>
 #include <map>
 #include <set>
@@ -16,23 +18,38 @@ using namespace std;
  */
 class CodeGen {
   public:
-    CodeGen();
+    CodeGen(CallsAnalysis *analysis);
 
-    void generateApply();
+    /**
+     * Apply optimizations using the GridWeaver code-generator
+     */
+    void apply();
 
   private:
-    void outputPrintCall(GridLibCall call);
-    void outputNewDataObject(GridLibCall call);
-    void outputGridApplication(GridLibCall call);
-    void outputNeighbor(ostream *out, Neighbor off, GridLibCall call);
-    void outputNewVariableDeclarations();
-    SgNode *getTopOfFunction(SgFunctionDefinition *func);
-    void addDeclaration(SgNode *at, string var);
-    void unparse(Exp &exp, ostream &out);
+    CallsAnalysis *mpCalls;
+};
 
-    Grid *mpGrid;
-    Analysis mAnalysis;
-    VarDeclsMap mVarDeclsToAdd;
+
+
+class DataApplyGenerator : public CallVisitor {
+  private:
+    CallsAnalysis *mpCalls;
+
+  public:
+    DataApplyGenerator(CallsAnalysis *calls) :
+        mpCalls(calls)
+    { }
+
+    virtual void visit__data_apply1(Call__data_apply1 *call);
+    virtual void visit__data_apply2(Call__data_apply2 *call);
+    virtual void visit__data_apply3(Call__data_apply3 *call);
+    virtual void visit__data_apply4(Call__data_apply4 *call);
+    virtual void visit__data_apply5(Call__data_apply5 *call);
+    virtual void visit__data_apply6(Call__data_apply6 *call);
+    virtual void visit__data_apply7(Call__data_apply7 *call);
+    virtual void visit__data_apply8(Call__data_apply8 *call);
+    virtual void visit__data_apply9(Call__data_apply9 *call);
+    virtual void visit__data_apply10(Call__data_apply10 *call);
 };
 
 #endif

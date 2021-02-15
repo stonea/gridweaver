@@ -15,6 +15,8 @@
 #include "vispage.hpp"
 #include "binIO.hpp"
 #include "runtimewrapper.hpp"
+#include "analyses.hpp"
+#include "codegen.hpp"
 #include <mpi.h>
 using namespace std;
 
@@ -105,6 +107,8 @@ void initializeMPI(int *argc, char **argv[]) {
         printf("Error starting MPI program. Terminating.\n");
         MPI_Abort(MPI_COMM_WORLD, err);
     } 
+
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 /**
@@ -112,29 +116,56 @@ void initializeMPI(int *argc, char **argv[]) {
  * execute the appropriate subprogram.
  */
 int main(int argc, char *argv[]) {
+    SgProject *proj = NULL;
+
     // Initialization
     initializeMPI(&argc, &argv);
     initializeModules();
     runScratchCode();
     
-    // Read in and respond to command line arguments
-    int optIdx = 0;
-    char opt;
-    while((opt = getopt_long(argc, argv, "vh12",
-                             options, &optIdx)) != -1)
-    {
-        switch(opt) {
-            case 'v':
-                version();
-                break;
-            
-            case 'h':
-                help();
-                break;
+    // Only have the master process execute
+    if(myRank() == 0) {
+        // Read in and respond to command line arguments
+        int optIdx = 0;
+        char opt;
+        while((opt = getopt_long(argc, argv, "vh12",
+                                 options, &optIdx)) != -1)
+        {
+            switch(opt) {
+                case 'v':
+                    version();
+                    break;
+                
+                case 'h':
+                    help();
+                    break;
+            }
         }
+
+        // Copy non argopt params into their own 
+        cout << "Count is: " << argc << endl;
+        for(int i = optind; i < argc; i++) {
+            cout << argv[i] << endl;
+        }
+
+        // Analyze the program, extract calls
+        proj = frontend(argc, argv);
+
+        CallsAnalysis analysis;
+        analysis.analyze(proj);
+        //analysis.print(cout);
+        Environment::print(cout);
+
+        CodeGen gen(&analysis);
+        gen.apply();
     }
 
+    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize(); 
+
+    if(proj != NULL) {
+        proj->unparse();
+    }
     return 1;
 }
 
@@ -144,7 +175,7 @@ int main(int argc, char *argv[]) {
  * start.
  */
 void runScratchCode() {
-    int nProcs = 4;
+    /*int nProcs = 4;
     int n = 10;
     int blkW = 5; int blkH = 5;
 
@@ -176,5 +207,5 @@ void runScratchCode() {
     Schedule *sched = Environment::newSchedule("sched");
     sched->calculate(g, dist);
 
-    Environment::print(cout);
+    Environment::print(cout);*/
 }

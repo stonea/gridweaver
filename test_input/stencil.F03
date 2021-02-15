@@ -53,6 +53,7 @@ program Stencil
  
     call MPI_BARRIER(MPI_COMM_WORLD, ierr)
  
+ 
     ! Update the data's halo and print it out again
     !call data_forceUpdate(gridData)
     !if(myRank() == 0) then

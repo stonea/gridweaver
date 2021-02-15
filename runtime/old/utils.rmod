@@ -1,0 +1,18 @@
+
+! =================================================================================== 
+! <<Automatically generated for Rose Fortran Separate Compilation, DO NOT MODIFY IT>> 
+! =================================================================================== 
+
+MODULE Utils
+public printMatrix
+CONTAINS
+INTEGER FUNCTION AT(x,y,N) result(res)
+INTEGER, INTENT(IN) :: x,y,N
+END  FUNCTION 
+SUBROUTINE printMatrix(A,n)
+REAL, DIMENSION(:), INTENT(IN) :: A
+INTEGER, INTENT(IN) :: n
+INTEGER :: idx_0,idx_1
+END SUBROUTINE 
+
+END MODULE Utils
