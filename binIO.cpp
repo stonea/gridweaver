@@ -5,6 +5,8 @@
  *****************************************************************************/
 #include "binIO.hpp"
 
+// random comment
+
 void initializeModule_binio() {
 }
 
